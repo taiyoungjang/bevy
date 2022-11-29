@@ -49,7 +49,7 @@ fn setup(
     // camera
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(4.0, 2.5, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(4.0, 2.5, 4.0).looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         },
         MainCamera,
@@ -60,10 +60,10 @@ fn rotate_camera(mut camera: Query<&mut Transform, With<MainCamera>>, time: Res<
     let cam_transform = camera.single_mut().into_inner();
 
     cam_transform.rotate_around(
-        Vec3::ZERO,
-        Quat::from_axis_angle(Vec3::Y, 45f32.to_radians() * time.delta_seconds()),
+        DVec3::ZERO,
+        DQuat::from_axis_angle(DVec3::Y, 45f64.to_radians() * time.delta_seconds_f64()),
     );
-    cam_transform.look_at(Vec3::ZERO, Vec3::Y);
+    cam_transform.look_at(DVec3::ZERO, DVec3::Y);
 }
 
 #[derive(AsBindGroup, Debug, Clone, TypeUuid)]

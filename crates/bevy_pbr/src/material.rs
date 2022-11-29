@@ -130,7 +130,7 @@ pub trait Material: AsBindGroup + Send + Sync + Clone + TypeUuid + Sized + 'stat
     #[inline]
     /// Add a bias to the view depth of the mesh which can be used to force a specific render order
     /// for meshes with equal depth, to avoid z-fighting.
-    fn depth_bias(&self) -> f32 {
+    fn depth_bias(&self) -> f64 {
         0.0
     }
 
@@ -392,7 +392,7 @@ pub fn queue_material_meshes<M: Material>(
                             }
                         };
 
-                        let distance = rangefinder.distance(&mesh_uniform.transform)
+                        let distance = rangefinder.distance_mat4(&mesh_uniform.transform)
                             + material.properties.depth_bias;
                         match alpha_mode {
                             AlphaMode::Opaque => {
@@ -400,7 +400,7 @@ pub fn queue_material_meshes<M: Material>(
                                     entity: *visible_entity,
                                     draw_function: draw_opaque_pbr,
                                     pipeline: pipeline_id,
-                                    distance,
+                                    distance: distance as f32,
                                 });
                             }
                             AlphaMode::Mask(_) => {
@@ -408,7 +408,7 @@ pub fn queue_material_meshes<M: Material>(
                                     entity: *visible_entity,
                                     draw_function: draw_alpha_mask_pbr,
                                     pipeline: pipeline_id,
-                                    distance,
+                                    distance: distance as f32,
                                 });
                             }
                             AlphaMode::Blend => {
@@ -416,7 +416,7 @@ pub fn queue_material_meshes<M: Material>(
                                     entity: *visible_entity,
                                     draw_function: draw_transparent_pbr,
                                     pipeline: pipeline_id,
-                                    distance,
+                                    distance: distance as f32,
                                 });
                             }
                         }
@@ -433,7 +433,7 @@ pub struct MaterialProperties {
     pub alpha_mode: AlphaMode,
     /// Add a bias to the view depth of the mesh which can be used to force a specific render order
     /// for meshes with equal depth, to avoid z-fighting.
-    pub depth_bias: f32,
+    pub depth_bias: f64,
 }
 
 /// Data prepared for a [`Material`] instance.

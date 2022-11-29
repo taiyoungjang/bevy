@@ -1,24 +1,24 @@
 //! Shows multiple transformations of objects.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::prelude::*;
 
 // A struct for additional data of for a moving cube.
 #[derive(Component)]
 struct CubeState {
-    start_pos: Vec3,
-    move_speed: f32,
-    turn_speed: f32,
+    start_pos: DVec3,
+    move_speed: f64,
+    turn_speed: f64,
 }
 
 // A struct adding information to a scalable entity,
 // that will be stationary at the center of the scene.
 #[derive(Component)]
 struct Center {
-    max_size: f32,
-    min_size: f32,
-    scale_factor: f32,
+    max_size: f64,
+    min_size: f64,
+    scale_factor: f64,
 }
 
 fn main() {
@@ -48,7 +48,7 @@ fn setup(
                 .unwrap(),
             ),
             material: materials.add(Color::YELLOW.into()),
-            transform: Transform::from_translation(Vec3::ZERO),
+            transform: Transform::from_translation(DVec3::ZERO),
             ..default()
         },
         Center {
@@ -64,7 +64,7 @@ fn setup(
     // Define a start transform for an orbiting cube, that's away from our central object (sphere)
     // and rotate it so it will be able to move around the sphere and not towards it.
     let cube_spawn =
-        Transform::from_translation(Vec3::Z * -10.0).with_rotation(Quat::from_rotation_y(PI / 2.));
+        Transform::from_translation(DVec3::Z * -10.0).with_rotation(DQuat::from_rotation_y(PI / 2.));
     commands.spawn((
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -81,13 +81,13 @@ fn setup(
 
     // Spawn a camera looking at the entities to show what's happening in this example.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
     // Add a light source for better 3d visibility.
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::ONE * 3.0),
+        transform: Transform::from_translation(DVec3::ONE * 3.0),
         ..default()
     });
 }
@@ -97,7 +97,7 @@ fn move_cube(mut cubes: Query<(&mut Transform, &mut CubeState)>, timer: Res<Time
     for (mut transform, cube) in &mut cubes {
         // Move the cube forward smoothly at a given move_speed.
         let forward = transform.forward();
-        transform.translation += forward * cube.move_speed * timer.delta_seconds();
+        transform.translation += forward * cube.move_speed * timer.delta_seconds_f64();
     }
 }
 
@@ -110,7 +110,7 @@ fn rotate_cube(
     timer: Res<Time>,
 ) {
     // Calculate the point to circle around. (The position of the center_sphere)
-    let mut center: Vec3 = Vec3::ZERO;
+    let mut center: DVec3 = DVec3::ZERO;
     for sphere in &center_spheres {
         center += sphere.translation;
     }
@@ -121,7 +121,7 @@ fn rotate_cube(
         // Interpolate between the current rotation and the fully turned rotation
         // when looking a the sphere,  with a given turn speed to get a smooth motion.
         // With higher speed the curvature of the orbit would be smaller.
-        let incremental_turn_weight = cube.turn_speed * timer.delta_seconds();
+        let incremental_turn_weight = cube.turn_speed * timer.delta_seconds_f64();
         let old_rotation = transform.rotation;
         transform.rotation = old_rotation.lerp(look_at_sphere.rotation, incremental_turn_weight);
     }
@@ -144,7 +144,7 @@ fn scale_down_sphere_proportional_to_cube_travel_distance(
         // Calculate the new size from the calculated distances and the centers scale_factor.
         // Since we want to have the sphere at its max_size at the cubes spawn location we start by
         // using the max_size as start value and subtract the distances scaled by a scaling factor.
-        let mut new_size: f32 = center.max_size - center.scale_factor * distances;
+        let mut new_size: f64 = center.max_size - center.scale_factor * distances;
 
         // The new size should also not be smaller than the centers min_size.
         // Therefore the max value out of (new_size, center.min_size) is used.
@@ -152,6 +152,6 @@ fn scale_down_sphere_proportional_to_cube_travel_distance(
 
         // Now scale the sphere uniformly in all directions using new_size.
         // Here Vec3:splat is used to create a vector with new_size in x, y and z direction.
-        transform.scale = Vec3::splat(new_size);
+        transform.scale = DVec3::splat(new_size);
     }
 }

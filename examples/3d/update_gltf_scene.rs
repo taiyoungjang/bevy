@@ -21,7 +21,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(1.05, 0.9, 1.5)
-            .looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+            .looking_at(DVec3::new(0.0, 0.3, 0.0), DVec3::Y),
         ..default()
     });
 
@@ -53,10 +53,10 @@ fn move_scene_entities(
         let mut offset = 0.;
         for entity in children.iter_descendants(moved_scene_entity) {
             if let Ok(mut transform) = transforms.get_mut(entity) {
-                transform.translation = Vec3::new(
-                    offset * time.elapsed_seconds().sin() / 20.,
+                transform.translation = DVec3::new(
+                    offset * time.elapsed_seconds_f64().sin() / 20.,
                     0.,
-                    time.elapsed_seconds().cos() / 20.,
+                    time.elapsed_seconds_f64().cos() / 20.,
                 );
                 offset += 1.0;
             }

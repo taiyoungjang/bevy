@@ -1,7 +1,7 @@
 //! Loads animations from a skinned glTF, spawns many of them, and plays the
 //! animation to stress test skinned meshes.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -12,7 +12,7 @@ use bevy::{
 #[derive(Resource)]
 struct Foxes {
     count: usize,
-    speed: f32,
+    speed: f64,
     moving: bool,
 }
 
@@ -49,8 +49,8 @@ fn main() {
 #[derive(Resource)]
 struct Animations(Vec<Handle<AnimationClip>>);
 
-const RING_SPACING: f32 = 2.0;
-const FOX_SPACING: f32 = 2.0;
+const RING_SPACING: f64 = 2.0;
+const FOX_SPACING: f64 = 2.0;
 
 #[derive(Component, Clone, Copy)]
 enum RotationDirection {
@@ -59,7 +59,7 @@ enum RotationDirection {
 }
 
 impl RotationDirection {
-    fn sign(&self) -> f32 {
+    fn sign(&self) -> f64 {
         match self {
             RotationDirection::CounterClockwise => 1.0,
             RotationDirection::Clockwise => -1.0,
@@ -69,7 +69,7 @@ impl RotationDirection {
 
 #[derive(Component)]
 struct Ring {
-    radius: f32,
+    radius: f64,
 }
 
 fn setup(
@@ -97,10 +97,10 @@ fn setup(
 
     let ring_directions = [
         (
-            Quat::from_rotation_y(PI),
+            DQuat::from_rotation_y(PI),
             RotationDirection::CounterClockwise,
         ),
-        (Quat::IDENTITY, RotationDirection::Clockwise),
+        (DQuat::IDENTITY, RotationDirection::Clockwise),
     ];
 
     let mut ring_index = 0;
@@ -121,10 +121,10 @@ fn setup(
 
         let circumference = PI * 2. * radius;
         let foxes_in_ring = ((circumference / FOX_SPACING) as usize).min(foxes_remaining);
-        let fox_spacing_angle = circumference / (foxes_in_ring as f32 * radius);
+        let fox_spacing_angle = circumference / (foxes_in_ring as f64 * radius);
 
         for fox_i in 0..foxes_in_ring {
-            let fox_angle = fox_i as f32 * fox_spacing_angle;
+            let fox_angle = fox_i as f64 * fox_spacing_angle;
             let (s, c) = fox_angle.sin_cos();
             let (x, z) = (radius * c, radius * s);
 
@@ -132,8 +132,8 @@ fn setup(
                 builder.spawn(SceneBundle {
                     scene: fox_handle.clone(),
                     transform: Transform::from_xyz(x, 0.0, z)
-                        .with_scale(Vec3::splat(0.01))
-                        .with_rotation(base_rotation * Quat::from_rotation_y(-fox_angle)),
+                        .with_scale(DVec3::splat(0.01))
+                        .with_rotation(base_rotation * DQuat::from_rotation_y(-fox_angle)),
                     ..default()
                 });
             });
@@ -146,14 +146,14 @@ fn setup(
 
     // Camera
     let zoom = 0.8;
-    let translation = Vec3::new(
+    let translation = DVec3::new(
         radius * 1.25 * zoom,
         radius * 0.5 * zoom,
         radius * 1.5 * zoom,
     );
     commands.spawn(Camera3dBundle {
         transform: Transform::from_translation(translation)
-            .looking_at(0.2 * Vec3::new(translation.x, 0.0, translation.z), Vec3::Y),
+            .looking_at(0.2 * DVec3::new(translation.x, 0.0, translation.z), DVec3::Y),
         ..default()
     });
 
@@ -166,7 +166,7 @@ fn setup(
 
     // Light
     commands.spawn(DirectionalLightBundle {
-        transform: Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
+        transform: Transform::from_rotation(DQuat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
         directional_light: DirectionalLight {
             shadows_enabled: true,
             ..default()
@@ -205,7 +205,7 @@ fn update_fox_rings(
         return;
     }
 
-    let dt = time.delta_seconds();
+    let dt = time.delta_seconds_f64();
     for (ring, rotation_direction, mut transform) in &mut rings {
         let angular_velocity = foxes.speed / ring.radius;
         transform.rotate_y(rotation_direction.sign() * angular_velocity * dt);

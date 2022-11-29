@@ -1,6 +1,6 @@
 //! Eat the cakes. Eat them all. An example 3D game.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{ecs::schedule::SystemSet, prelude::*};
 use rand::Rng;
@@ -42,7 +42,7 @@ fn main() {
 }
 
 struct Cell {
-    height: f32,
+    height: f64,
 }
 
 #[derive(Default)]
@@ -68,29 +68,29 @@ struct Game {
     bonus: Bonus,
     score: i32,
     cake_eaten: u32,
-    camera_should_focus: Vec3,
-    camera_is_focus: Vec3,
+    camera_should_focus: DVec3,
+    camera_is_focus: DVec3,
 }
 
 const BOARD_SIZE_I: usize = 14;
 const BOARD_SIZE_J: usize = 21;
 
-const RESET_FOCUS: [f32; 3] = [
-    BOARD_SIZE_I as f32 / 2.0,
+const RESET_FOCUS: [f64; 3] = [
+    BOARD_SIZE_I as f64 / 2.0,
     0.0,
-    BOARD_SIZE_J as f32 / 2.0 - 0.5,
+    BOARD_SIZE_J as f64 / 2.0 - 0.5,
 ];
 
 fn setup_cameras(mut commands: Commands, mut game: ResMut<Game>) {
-    game.camera_should_focus = Vec3::from(RESET_FOCUS);
+    game.camera_should_focus = DVec3::from(RESET_FOCUS);
     game.camera_is_focus = game.camera_should_focus;
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(
-            -(BOARD_SIZE_I as f32 / 2.0),
-            2.0 * BOARD_SIZE_J as f32 / 3.0,
-            BOARD_SIZE_J as f32 / 2.0 - 0.5,
+            -(BOARD_SIZE_I as f64 / 2.0),
+            2.0 * BOARD_SIZE_J as f64 / 3.0,
+            BOARD_SIZE_J as f64 / 2.0 - 0.5,
         )
-        .looking_at(game.camera_is_focus, Vec3::Y),
+        .looking_at(game.camera_is_focus, DVec3::Y),
         ..default()
     });
 }
@@ -122,7 +122,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut game: ResMu
                 .map(|i| {
                     let height = rand::thread_rng().gen_range(-0.1..0.1);
                     commands.spawn(SceneBundle {
-                        transform: Transform::from_xyz(i as f32, height - 0.2, j as f32),
+                        transform: Transform::from_xyz(i as f64, height - 0.2, j as f64),
                         scene: cell_scene.clone(),
                         ..default()
                     });
@@ -137,12 +137,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut game: ResMu
         commands
             .spawn(SceneBundle {
                 transform: Transform {
-                    translation: Vec3::new(
-                        game.player.i as f32,
+                    translation: DVec3::new(
+                        game.player.i as f64,
                         game.board[game.player.j][game.player.i].height,
-                        game.player.j as f32,
+                        game.player.j as f64,
                     ),
-                    rotation: Quat::from_rotation_y(-PI / 2.),
+                    rotation: DQuat::from_rotation_y(-PI / 2.),
                     ..default()
                 },
                 scene: asset_server.load("models/AlienCake/alien.glb#Scene0"),
@@ -228,12 +228,12 @@ fn move_player(
         if moved {
             game.player.move_cooldown.reset();
             *transforms.get_mut(game.player.entity.unwrap()).unwrap() = Transform {
-                translation: Vec3::new(
-                    game.player.i as f32,
+                translation: DVec3::new(
+                    game.player.i as f64,
                     game.board[game.player.j][game.player.i].height,
-                    game.player.j as f32,
+                    game.player.j as f64,
                 ),
-                rotation: Quat::from_rotation_y(rotation),
+                rotation: DQuat::from_rotation_y(rotation),
                 ..default()
             };
         }
@@ -256,7 +256,7 @@ fn focus_camera(
     mut game: ResMut<Game>,
     mut transforms: ParamSet<(Query<&mut Transform, With<Camera3d>>, Query<&Transform>)>,
 ) {
-    const SPEED: f32 = 2.0;
+    const SPEED: f64 = 2.0;
     // if there is both a player and a bonus, target the mid-point of them
     if let (Some(player_entity), Some(bonus_entity)) = (game.player.entity, game.bonus.entity) {
         let transform_query = transforms.p1();
@@ -275,20 +275,20 @@ fn focus_camera(
         }
         // otherwise, target the middle
     } else {
-        game.camera_should_focus = Vec3::from(RESET_FOCUS);
+        game.camera_should_focus = DVec3::from(RESET_FOCUS);
     }
     // calculate the camera motion based on the difference between where the camera is looking
     // and where it should be looking; the greater the distance, the faster the motion;
     // smooth out the camera movement using the frame time
     let mut camera_motion = game.camera_should_focus - game.camera_is_focus;
     if camera_motion.length() > 0.2 {
-        camera_motion *= SPEED * time.delta_seconds();
+        camera_motion *= SPEED * time.delta_seconds_f64();
         // set the new camera's actual focus
         game.camera_is_focus += camera_motion;
     }
     // look at that new camera's actual focus
     for mut transform in transforms.p0().iter_mut() {
-        *transform = transform.looking_at(game.camera_is_focus, Vec3::Y);
+        *transform = transform.looking_at(game.camera_is_focus, DVec3::Y);
     }
 }
 
@@ -328,9 +328,9 @@ fn spawn_bonus(
         commands
             .spawn(SceneBundle {
                 transform: Transform::from_xyz(
-                    game.bonus.i as f32,
+                    game.bonus.i as f64,
                     game.board[game.bonus.j][game.bonus.i].height + 0.2,
-                    game.bonus.j as f32,
+                    game.bonus.j as f64,
                 ),
                 scene: game.bonus.handle.clone(),
                 ..default()
@@ -355,9 +355,9 @@ fn spawn_bonus(
 fn rotate_bonus(game: Res<Game>, time: Res<Time>, mut transforms: Query<&mut Transform>) {
     if let Some(entity) = game.bonus.entity {
         if let Ok(mut cake_transform) = transforms.get_mut(entity) {
-            cake_transform.rotate_y(time.delta_seconds());
+            cake_transform.rotate_y(time.delta_seconds_f64());
             cake_transform.scale =
-                Vec3::splat(1.0 + (game.score as f32 / 10.0 * time.elapsed_seconds().sin()).abs());
+                DVec3::splat(1.0 + (game.score as f64 / 10.0 * time.elapsed_seconds_f64().sin()).abs());
         }
     }
 }

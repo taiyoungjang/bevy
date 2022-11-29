@@ -79,9 +79,9 @@ impl GlyphBrush {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let mut min_x = std::f32::MAX;
-        let mut min_y = std::f32::MAX;
-        let mut max_y = std::f32::MIN;
+        let mut min_x = f32::MAX;
+        let mut min_y = f32::MAX;
+        let mut max_y = f32::MIN;
         for sg in &glyphs {
             let glyph = &sg.glyph;
 
@@ -135,7 +135,7 @@ impl GlyphBrush {
 
                 let y = match y_axis_orientation {
                     YAxisOrientation::BottomToTop => max_y - bounds.max.y + size.y / 2.0,
-                    YAxisOrientation::TopToBottom => bounds.min.y + size.y / 2.0 - min_y,
+                    YAxisOrientation::TopToBottom => bounds.min.y  + size.y / 2.0 - min_y,
                 };
 
                 let position = adjust.position(Vec2::new(x, y));

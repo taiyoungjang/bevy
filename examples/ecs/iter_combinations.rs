@@ -29,15 +29,15 @@ fn main() {
         .run();
 }
 
-const GRAVITY_CONSTANT: f32 = 0.001;
+const GRAVITY_CONSTANT: f64 = 0.001;
 const NUM_BODIES: usize = 100;
 
 #[derive(Component, Default)]
-struct Mass(f32);
+struct Mass(f64);
 #[derive(Component, Default)]
-struct Acceleration(Vec3);
+struct Acceleration(DVec3);
 #[derive(Component, Default)]
-struct LastPos(Vec3);
+struct LastPos(DVec3);
 #[derive(Component)]
 struct Star;
 
@@ -67,23 +67,23 @@ fn generate_bodies(
 
     let mut rng = thread_rng();
     for _ in 0..NUM_BODIES {
-        let radius: f32 = rng.gen_range(0.1..0.7);
+        let radius: f64 = rng.gen_range(0.1..0.7);
         let mass_value = radius.powi(3) * 10.;
 
-        let position = Vec3::new(
+        let position =DVec3::new(
             rng.gen_range(-1.0..1.0),
             rng.gen_range(-1.0..1.0),
             rng.gen_range(-1.0..1.0),
         )
         .normalize()
-            * rng.gen_range(0.2f32..1.0).cbrt()
+            * rng.gen_range(0.2f64..1.0).cbrt()
             * 15.;
 
         commands.spawn(BodyBundle {
             pbr: PbrBundle {
                 transform: Transform {
                     translation: position,
-                    scale: Vec3::splat(radius),
+                    scale: DVec3::splat(radius),
                     ..default()
                 },
                 mesh: mesh.clone(),
@@ -98,14 +98,14 @@ fn generate_bodies(
                 ..default()
             },
             mass: Mass(mass_value),
-            acceleration: Acceleration(Vec3::ZERO),
+            acceleration: Acceleration(DVec3::ZERO),
             last_pos: LastPos(
                 position
-                    - Vec3::new(
+                    - DVec3::new(
                         rng.gen_range(vel_range.clone()),
                         rng.gen_range(vel_range.clone()),
                         rng.gen_range(vel_range.clone()),
-                    ) * DELTA_TIME as f32,
+                    ) * DELTA_TIME,
             ),
         });
     }
@@ -116,7 +116,7 @@ fn generate_bodies(
         .spawn((
             BodyBundle {
                 pbr: PbrBundle {
-                    transform: Transform::from_scale(Vec3::splat(star_radius)),
+                    transform: Transform::from_scale(DVec3::splat(star_radius)),
                     mesh: meshes.add(
                         Mesh::try_from(shape::Icosphere {
                             radius: 1.0,
@@ -142,14 +142,14 @@ fn generate_bodies(
                     color: Color::WHITE,
                     intensity: 400.0,
                     range: 100.0,
-                    radius: star_radius,
+                    radius: star_radius as f32,
                     ..default()
                 },
                 ..default()
             });
         });
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.5, -30.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.5, -30.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }
@@ -160,7 +160,7 @@ fn interact_bodies(mut query: Query<(&Mass, &GlobalTransform, &mut Acceleration)
         iter.fetch_next()
     {
         let delta = transform2.translation() - transform1.translation();
-        let distance_sq: f32 = delta.length_squared();
+        let distance_sq: f64 = delta.length_squared();
 
         let f = GRAVITY_CONSTANT / distance_sq;
         let force_unit_mass = delta * f;
@@ -170,13 +170,13 @@ fn interact_bodies(mut query: Query<(&Mass, &GlobalTransform, &mut Acceleration)
 }
 
 fn integrate(mut query: Query<(&mut Acceleration, &mut Transform, &mut LastPos)>) {
-    let dt_sq = (DELTA_TIME * DELTA_TIME) as f32;
+    let dt_sq = (DELTA_TIME * DELTA_TIME) as f64;
     for (mut acceleration, mut transform, mut last_pos) in &mut query {
         // verlet integration
         // x(t+dt) = 2x(t) - x(t-dt) + a(t)dt^2 + O(dt^4)
 
         let new_pos = transform.translation * 2.0 - last_pos.0 + acceleration.0 * dt_sq;
-        acceleration.0 = Vec3::ZERO;
+        acceleration.0 = DVec3::ZERO;
         last_pos.0 = transform.translation;
         transform.translation = new_pos;
     }
@@ -189,7 +189,7 @@ fn look_at_star(
     let mut camera = camera.single_mut();
     let star = star.single();
     let new_rotation = camera
-        .looking_at(star.translation, Vec3::Y)
+        .looking_at(star.translation, DVec3::Y)
         .rotation
         .lerp(camera.rotation, 0.1);
     camera.rotation = new_rotation;

@@ -5,7 +5,7 @@ use wgpu::PrimitiveTopology;
 #[derive(Debug, Copy, Clone)]
 pub struct RegularPolygon {
     /// Inscribed radius in the `XY` plane.
-    pub radius: f32,
+    pub radius: f64,
     /// Number of sides.
     pub sides: usize,
 }
@@ -21,7 +21,7 @@ impl Default for RegularPolygon {
 
 impl RegularPolygon {
     /// Creates a regular polygon in the `XY` plane
-    pub fn new(radius: f32, sides: usize) -> Self {
+    pub fn new(radius: f64, sides: usize) -> Self {
         Self { radius, sides }
     }
 }
@@ -35,7 +35,7 @@ impl From<RegularPolygon> for Mesh {
         let mut positions = Vec::with_capacity(sides);
         let mut normals = Vec::with_capacity(sides);
         let mut uvs = Vec::with_capacity(sides);
-
+        let radius = radius as f32;
         let step = std::f32::consts::TAU / sides as f32;
         for i in 0..sides {
             let theta = std::f32::consts::FRAC_PI_2 - i as f32 * step;
@@ -64,7 +64,7 @@ impl From<RegularPolygon> for Mesh {
 #[derive(Debug, Copy, Clone)]
 pub struct Circle {
     /// Inscribed radius in the `XY` plane.
-    pub radius: f32,
+    pub radius: f64,
     /// The number of vertices used.
     pub vertices: usize,
 }
@@ -80,7 +80,7 @@ impl Default for Circle {
 
 impl Circle {
     /// Creates a circle in the `XY` plane
-    pub fn new(radius: f32) -> Self {
+    pub fn new(radius: f64) -> Self {
         Self {
             radius,
             ..Default::default()

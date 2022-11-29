@@ -58,14 +58,14 @@ impl Camera2dBundle {
             far,
             ..Default::default()
         };
-        let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
+        let transform = Transform::from_xyz(0.0, 0.0, far as f64 - 0.1);
         let view_projection =
             projection.get_projection_matrix() * transform.compute_matrix().inverse();
         let frustum = Frustum::from_view_projection(
             &view_projection,
             &transform.translation,
             &transform.back(),
-            projection.far(),
+            projection.far() as f64,
         );
         Self {
             camera_render_graph: CameraRenderGraph::new(crate::core_2d::graph::NAME),

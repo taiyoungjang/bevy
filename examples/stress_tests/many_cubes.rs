@@ -66,7 +66,7 @@ fn setup(
                 commands.spawn(PbrBundle {
                     mesh: mesh.clone_weak(),
                     material: material.clone_weak(),
-                    transform: Transform::from_translation((radius * unit_sphere_p).as_vec3()),
+                    transform: Transform::from_translation(radius * unit_sphere_p),
                     ..default()
                 });
             }
@@ -87,36 +87,36 @@ fn setup(
                     commands.spawn(PbrBundle {
                         mesh: mesh.clone_weak(),
                         material: material.clone_weak(),
-                        transform: Transform::from_xyz((x as f32) * 2.5, (y as f32) * 2.5, 0.0),
+                        transform: Transform::from_xyz((x as f64) * 2.5, (y as f64) * 2.5, 0.0),
                         ..default()
                     });
                     commands.spawn(PbrBundle {
                         mesh: mesh.clone_weak(),
                         material: material.clone_weak(),
                         transform: Transform::from_xyz(
-                            (x as f32) * 2.5,
-                            HEIGHT as f32 * 2.5,
-                            (y as f32) * 2.5,
+                            (x as f64) * 2.5,
+                            HEIGHT as f64 * 2.5,
+                            (y as f64) * 2.5,
                         ),
                         ..default()
                     });
                     commands.spawn(PbrBundle {
                         mesh: mesh.clone_weak(),
                         material: material.clone_weak(),
-                        transform: Transform::from_xyz((x as f32) * 2.5, 0.0, (y as f32) * 2.5),
+                        transform: Transform::from_xyz((x as f64) * 2.5, 0.0, (y as f64) * 2.5),
                         ..default()
                     });
                     commands.spawn(PbrBundle {
                         mesh: mesh.clone_weak(),
                         material: material.clone_weak(),
-                        transform: Transform::from_xyz(0.0, (x as f32) * 2.5, (y as f32) * 2.5),
+                        transform: Transform::from_xyz(0.0, (x as f64) * 2.5, (y as f64) * 2.5),
                         ..default()
                     });
                 }
             }
             // camera
             commands.spawn(Camera3dBundle {
-                transform: Transform::from_xyz(WIDTH as f32, HEIGHT as f32, WIDTH as f32),
+                transform: Transform::from_xyz(WIDTH as f64, HEIGHT as f64, WIDTH as f64),
                 ..default()
             });
         }
@@ -128,8 +128,8 @@ fn setup(
         mesh,
         material,
         transform: Transform {
-            translation: Vec3::new(0.0, HEIGHT as f32 * 2.5, 0.0),
-            scale: Vec3::splat(5.0),
+            translation: DVec3::new(0.0, HEIGHT as f64 * 2.5, 0.0),
+            scale: DVec3::splat(5.0),
             ..default()
         },
         ..default()
@@ -160,7 +160,7 @@ fn spherical_polar_to_cartesian(p: DVec2) -> DVec3 {
 // System for rotating the camera
 fn move_camera(time: Res<Time>, mut camera_query: Query<&mut Transform, With<Camera>>) {
     let mut camera_transform = camera_query.single_mut();
-    let delta = time.delta_seconds() * 0.15;
+    let delta = time.delta_seconds_f64() * 0.15;
     camera_transform.rotate_z(delta);
     camera_transform.rotate_x(delta);
 }

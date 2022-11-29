@@ -8,37 +8,37 @@ use bevy::{
 };
 
 // Defines the amount of time that should elapse between each physics step.
-const TIME_STEP: f32 = 1.0 / 60.0;
+const TIME_STEP: f64 = 1.0 / 60.0;
 
 // These constants are defined in `Transform` units.
 // Using the default 2D camera they correspond 1:1 with screen pixels.
-const PADDLE_SIZE: Vec3 = Vec3::new(120.0, 20.0, 0.0);
-const GAP_BETWEEN_PADDLE_AND_FLOOR: f32 = 60.0;
-const PADDLE_SPEED: f32 = 500.0;
+const PADDLE_SIZE: DVec3 = DVec3::new(120.0, 20.0, 0.0);
+const GAP_BETWEEN_PADDLE_AND_FLOOR: f64 = 60.0;
+const PADDLE_SPEED: f64 = 500.0;
 // How close can the paddle get to the wall
-const PADDLE_PADDING: f32 = 10.0;
+const PADDLE_PADDING: f64 = 10.0;
 
 // We set the z-value of the ball to 1 so it renders on top in the case of overlapping sprites.
-const BALL_STARTING_POSITION: Vec3 = Vec3::new(0.0, -50.0, 1.0);
-const BALL_SIZE: Vec3 = Vec3::new(30.0, 30.0, 0.0);
-const BALL_SPEED: f32 = 400.0;
-const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
+const BALL_STARTING_POSITION: DVec3 = DVec3::new(0.0, -50.0, 1.0);
+const BALL_SIZE: DVec3 = DVec3::new(30.0, 30.0, 0.0);
+const BALL_SPEED: f64 = 400.0;
+const INITIAL_BALL_DIRECTION: DVec2 = DVec2::new(0.5, -0.5);
 
-const WALL_THICKNESS: f32 = 10.0;
+const WALL_THICKNESS: f64 = 10.0;
 // x coordinates
-const LEFT_WALL: f32 = -450.;
-const RIGHT_WALL: f32 = 450.;
+const LEFT_WALL: f64 = -450.;
+const RIGHT_WALL: f64 = 450.;
 // y coordinates
-const BOTTOM_WALL: f32 = -300.;
-const TOP_WALL: f32 = 300.;
+const BOTTOM_WALL: f64 = -300.;
+const TOP_WALL: f64 = 300.;
 
-const BRICK_SIZE: Vec2 = Vec2::new(100., 30.);
+const BRICK_SIZE: DVec2 = DVec2::new(100., 30.);
 // These values are exact
-const GAP_BETWEEN_PADDLE_AND_BRICKS: f32 = 270.0;
-const GAP_BETWEEN_BRICKS: f32 = 5.0;
+const GAP_BETWEEN_PADDLE_AND_BRICKS: f64 = 270.0;
+const GAP_BETWEEN_BRICKS: f64 = 5.0;
 // These values are lower bounds, as the number of bricks is computed
-const GAP_BETWEEN_BRICKS_AND_CEILING: f32 = 20.0;
-const GAP_BETWEEN_BRICKS_AND_SIDES: f32 = 20.0;
+const GAP_BETWEEN_BRICKS_AND_CEILING: f64 = 20.0;
+const GAP_BETWEEN_BRICKS_AND_SIDES: f64 = 20.0;
 
 const SCOREBOARD_FONT_SIZE: f32 = 40.0;
 const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
@@ -78,7 +78,7 @@ struct Paddle;
 struct Ball;
 
 #[derive(Component, Deref, DerefMut)]
-struct Velocity(Vec2);
+struct Velocity(DVec2);
 
 #[derive(Component)]
 struct Collider;
@@ -110,16 +110,16 @@ enum WallLocation {
 }
 
 impl WallLocation {
-    fn position(&self) -> Vec2 {
+    fn position(&self) -> DVec2 {
         match self {
-            WallLocation::Left => Vec2::new(LEFT_WALL, 0.),
-            WallLocation::Right => Vec2::new(RIGHT_WALL, 0.),
-            WallLocation::Bottom => Vec2::new(0., BOTTOM_WALL),
-            WallLocation::Top => Vec2::new(0., TOP_WALL),
+            WallLocation::Left => DVec2::new(LEFT_WALL, 0.),
+            WallLocation::Right => DVec2::new(RIGHT_WALL, 0.),
+            WallLocation::Bottom => DVec2::new(0., BOTTOM_WALL),
+            WallLocation::Top => DVec2::new(0., TOP_WALL),
         }
     }
 
-    fn size(&self) -> Vec2 {
+    fn size(&self) -> DVec2 {
         let arena_height = TOP_WALL - BOTTOM_WALL;
         let arena_width = RIGHT_WALL - LEFT_WALL;
         // Make sure we haven't messed up our constants
@@ -128,10 +128,10 @@ impl WallLocation {
 
         match self {
             WallLocation::Left | WallLocation::Right => {
-                Vec2::new(WALL_THICKNESS, arena_height + WALL_THICKNESS)
+                DVec2::new(WALL_THICKNESS, arena_height + WALL_THICKNESS)
             }
             WallLocation::Bottom | WallLocation::Top => {
-                Vec2::new(arena_width + WALL_THICKNESS, WALL_THICKNESS)
+                DVec2::new(arena_width + WALL_THICKNESS, WALL_THICKNESS)
             }
         }
     }
@@ -190,7 +190,7 @@ fn setup(
     commands.spawn((
         SpriteBundle {
             transform: Transform {
-                translation: Vec3::new(0.0, paddle_y, 0.0),
+                translation: DVec3::new(0.0, paddle_y, 0.0),
                 scale: PADDLE_SIZE,
                 ..default()
             },
@@ -273,9 +273,9 @@ fn setup(
     let center_of_bricks = (LEFT_WALL + RIGHT_WALL) / 2.0;
     let left_edge_of_bricks = center_of_bricks
         // Space taken up by the bricks
-        - (n_columns as f32 / 2.0 * BRICK_SIZE.x)
+        - (n_columns as f64 / 2.0 * BRICK_SIZE.x)
         // Space taken up by the gaps
-        - n_vertical_gaps as f32 / 2.0 * GAP_BETWEEN_BRICKS;
+        - n_vertical_gaps as f64 / 2.0 * GAP_BETWEEN_BRICKS;
 
     // In Bevy, the `translation` of an entity describes the center point,
     // not its bottom-left corner
@@ -284,9 +284,9 @@ fn setup(
 
     for row in 0..n_rows {
         for column in 0..n_columns {
-            let brick_position = Vec2::new(
-                offset_x + column as f32 * (BRICK_SIZE.x + GAP_BETWEEN_BRICKS),
-                offset_y + row as f32 * (BRICK_SIZE.y + GAP_BETWEEN_BRICKS),
+            let brick_position = DVec2::new(
+                offset_x + column as f64 * (BRICK_SIZE.x + GAP_BETWEEN_BRICKS),
+                offset_y + row as f64 * (BRICK_SIZE.y + GAP_BETWEEN_BRICKS),
             );
 
             // brick
@@ -298,7 +298,7 @@ fn setup(
                     },
                     transform: Transform {
                         translation: brick_position.extend(0.0),
-                        scale: Vec3::new(BRICK_SIZE.x, BRICK_SIZE.y, 1.0),
+                        scale: DVec3::new(BRICK_SIZE.x, BRICK_SIZE.y, 1.0),
                         ..default()
                     },
                     ..default()

@@ -609,9 +609,9 @@ pub fn queue_sprites(
 
                 // If a rect is specified, adjust UVs and the size of the quad
                 if let Some(rect) = extracted_sprite.rect {
-                    let rect_size = rect.size();
+                    let rect_size = Vec2::new(rect.size().x as f32, rect.size().y as f32);
                     for uv in &mut uvs {
-                        *uv = (rect.min + *uv * rect_size) / current_image_size;
+                        *uv = (Vec2::new(rect.min.x as f32, rect.min.y as f32) + *uv * rect_size) / current_image_size;
                     }
                     quad_size = rect_size;
                 }
@@ -625,14 +625,14 @@ pub fn queue_sprites(
                 let positions = QUAD_VERTEX_POSITIONS.map(|quad_pos| {
                     extracted_sprite
                         .transform
-                        .transform_point(
+                        .transform_point_vec3(
                             ((quad_pos - extracted_sprite.anchor) * quad_size).extend(0.),
                         )
                         .into()
                 });
 
                 // These items will be sorted by depth with other phase items
-                let sort_key = FloatOrd(extracted_sprite.transform.translation().z);
+                let sort_key = FloatOrd(extracted_sprite.transform.translation().z as f32);
 
                 // Store the vertex data and add the item to the render phase
                 if current_batch.colored {

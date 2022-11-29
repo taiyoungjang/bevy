@@ -236,11 +236,11 @@ pub fn animation_player(
                         // Some curves have only one keyframe used to set a transform
                         if curve.keyframe_timestamps.len() == 1 {
                             match &curve.keyframes {
-                                Keyframes::Rotation(keyframes) => transform.rotation = keyframes[0],
+                                Keyframes::Rotation(keyframes) => transform.rotation = keyframes[0].as_f64(),
                                 Keyframes::Translation(keyframes) => {
-                                    transform.translation = keyframes[0];
+                                    transform.translation = keyframes[0].as_dvec3();
                                 }
-                                Keyframes::Scale(keyframes) => transform.scale = keyframes[0],
+                                Keyframes::Scale(keyframes) => transform.scale = keyframes[0].as_dvec3(),
                             }
                             continue;
                         }
@@ -272,19 +272,19 @@ pub fn animation_player(
                                 }
                                 // Rotations are using a spherical linear interpolation
                                 transform.rotation =
-                                    rot_start.normalize().slerp(rot_end.normalize(), lerp);
+                                    rot_start.normalize().slerp(rot_end.normalize(), lerp).as_f64();
                             }
                             Keyframes::Translation(keyframes) => {
                                 let translation_start = keyframes[step_start];
                                 let translation_end = keyframes[step_start + 1];
                                 let result = translation_start.lerp(translation_end, lerp);
-                                transform.translation = result;
+                                transform.translation = result.as_dvec3();
                             }
                             Keyframes::Scale(keyframes) => {
                                 let scale_start = keyframes[step_start];
                                 let scale_end = keyframes[step_start + 1];
                                 let result = scale_start.lerp(scale_end, lerp);
-                                transform.scale = result;
+                                transform.scale = result.as_dvec3();
                             }
                         }
                     }

@@ -6,14 +6,14 @@ use bevy::prelude::*;
 // Here it's an arbitrary movement speed, the spawn location, and a maximum distance from it.
 #[derive(Component)]
 struct Movable {
-    spawn: Vec3,
-    max_distance: f32,
-    speed: f32,
+    spawn: DVec3,
+    max_distance: f64,
+    speed: f64,
 }
 
 // Implement a utility function for easier Movable struct creation.
 impl Movable {
-    fn new(spawn: Vec3) -> Self {
+    fn new(spawn: DVec3) -> Self {
         Movable {
             spawn,
             max_distance: 5.0,
@@ -37,7 +37,7 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Add a cube to visualize translation.
-    let entity_spawn = Vec3::ZERO;
+    let entity_spawn = DVec3::ZERO;
     commands.spawn((
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -50,13 +50,13 @@ fn setup(
 
     // Spawn a camera looking at the entities to show what's happening in this example.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(entity_spawn, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(entity_spawn, DVec3::Y),
         ..default()
     });
 
     // Add a light source for better 3d visibility.
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::ONE * 3.0),
+        transform: Transform::from_translation(DVec3::ONE * 3.0),
         ..default()
     });
 }
@@ -69,6 +69,6 @@ fn move_cube(mut cubes: Query<(&mut Transform, &mut Movable)>, timer: Res<Time>)
             cube.speed *= -1.0;
         }
         let direction = transform.local_x();
-        transform.translation += direction * cube.speed * timer.delta_seconds();
+        transform.translation += direction * cube.speed * timer.delta_seconds_f64();
     }
 }

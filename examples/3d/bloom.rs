@@ -27,7 +27,7 @@ fn setup_scene(
                 hdr: true, // 1. HDR must be enabled on the camera
                 ..default()
             },
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         },
         BloomSettings::default(), // 2. Enable bloom for the camera
@@ -67,7 +67,7 @@ fn setup_scene(
                 PbrBundle {
                     mesh: mesh.clone(),
                     material,
-                    transform: Transform::from_xyz(x as f32 * 2.0, 0.0, z as f32 * 2.0),
+                    transform: Transform::from_xyz(x as f64 * 2.0, 0.0, z as f64 * 2.0),
                     ..default()
                 },
                 Bouncing,
@@ -161,6 +161,6 @@ struct Bouncing;
 fn bounce_spheres(time: Res<Time>, mut query: Query<&mut Transform, With<Bouncing>>) {
     for mut transform in query.iter_mut() {
         transform.translation.y =
-            (transform.translation.x + transform.translation.z + time.elapsed_seconds()).sin();
+            (transform.translation.x + transform.translation.z + time.elapsed_seconds_f64()).sin();
     }
 }

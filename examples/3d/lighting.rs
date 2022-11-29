@@ -1,7 +1,7 @@
 //! Illustrates different lights of various types and colors, some static, some moving over
 //! a simple scene.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::prelude::*;
 
@@ -129,7 +129,7 @@ fn setup(
     commands
         .spawn(SpotLightBundle {
             transform: Transform::from_xyz(-1.0, 2.0, 0.0)
-                .looking_at(Vec3::new(-1.0, 0.0, 0.0), Vec3::Z),
+                .looking_at(DVec3::new(-1.0, 0.0, 0.0), DVec3::Z),
             spot_light: SpotLight {
                 intensity: 1600.0, // lumens - roughly a 100W non-halogen incandescent bulb
                 color: Color::GREEN,
@@ -142,7 +142,7 @@ fn setup(
         })
         .with_children(|builder| {
             builder.spawn(PbrBundle {
-                transform: Transform::from_rotation(Quat::from_rotation_x(PI / 2.0)),
+                transform: Transform::from_rotation(DQuat::from_rotation_x(PI / 2.0)),
                 mesh: meshes.add(Mesh::from(shape::Capsule {
                     depth: 0.125,
                     radius: 0.1,
@@ -203,8 +203,8 @@ fn setup(
             ..default()
         },
         transform: Transform {
-            translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 4.),
+            translation: DVec3::new(0.0, 2.0, 0.0),
+            rotation: DQuat::from_rotation_x(-PI / 4.),
             ..default()
         },
         ..default()
@@ -212,7 +212,7 @@ fn setup(
 
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }
@@ -222,7 +222,7 @@ fn animate_light_direction(
     mut query: Query<&mut Transform, With<DirectionalLight>>,
 ) {
     for mut transform in &mut query {
-        transform.rotate_y(time.delta_seconds() * 0.5);
+        transform.rotate_y(time.delta_seconds_f64() * 0.5);
     }
 }
 
@@ -232,7 +232,7 @@ fn movement(
     mut query: Query<&mut Transform, With<Movable>>,
 ) {
     for mut transform in &mut query {
-        let mut direction = Vec3::ZERO;
+        let mut direction = DVec3::ZERO;
         if input.pressed(KeyCode::Up) {
             direction.y += 1.0;
         }
@@ -246,6 +246,6 @@ fn movement(
             direction.x += 1.0;
         }
 
-        transform.translation += time.delta_seconds() * 2.0 * direction;
+        transform.translation += time.delta_seconds_f64() * 2.0 * direction;
     }
 }

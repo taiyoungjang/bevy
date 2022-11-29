@@ -63,11 +63,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
     // Demonstrate text wrapping
     let box_size = Vec2::new(300.0, 200.0);
-    let box_position = Vec2::new(0.0, -250.0);
+    let box_position = DVec2::new(0.0, -250.0);
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             color: Color::rgb(0.25, 0.25, 0.75),
-            custom_size: Some(Vec2::new(box_size.x, box_size.y)),
+            custom_size: Some(Vec2::new(box_size.x as f32, box_size.y as f32)),
             ..default()
         },
         transform: Transform::from_translation(box_position.extend(0.0)),
@@ -83,8 +83,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         // box is centered at box_position, so it is necessary to move by half of the box size to
         // keep the text in the box.
         transform: Transform::from_xyz(
-            box_position.x - box_size.x / 2.0,
-            box_position.y + box_size.y / 2.0,
+            box_position.x - box_size.x as f64 / 2.0,
+            box_position.y + box_size.y as f64 / 2.0,
             1.0,
         ),
         ..default()
@@ -96,8 +96,8 @@ fn animate_translation(
     mut query: Query<&mut Transform, (With<Text>, With<AnimateTranslation>)>,
 ) {
     for mut transform in &mut query {
-        transform.translation.x = 100.0 * time.elapsed_seconds().sin() - 400.0;
-        transform.translation.y = 100.0 * time.elapsed_seconds().cos();
+        transform.translation.x = 100.0 * time.elapsed_seconds_f64().sin() - 400.0;
+        transform.translation.y = 100.0 * time.elapsed_seconds_f64().cos();
     }
 }
 
@@ -106,7 +106,7 @@ fn animate_rotation(
     mut query: Query<&mut Transform, (With<Text>, With<AnimateRotation>)>,
 ) {
     for mut transform in &mut query {
-        transform.rotation = Quat::from_rotation_z(time.elapsed_seconds().cos());
+        transform.rotation = DQuat::from_rotation_z(time.elapsed_seconds_f64().cos());
     }
 }
 
@@ -117,7 +117,7 @@ fn animate_scale(
     // Consider changing font-size instead of scaling the transform. Scaling a Text2D will scale the
     // rendered quad, resulting in a pixellated look.
     for mut transform in &mut query {
-        transform.translation = Vec3::new(400.0, 0.0, 0.0);
-        transform.scale = Vec3::splat((time.elapsed_seconds().sin() + 1.1) * 2.0);
+        transform.translation = DVec3::new(400.0, 0.0, 0.0);
+        transform.scale = DVec3::splat((time.elapsed_seconds_f64().sin() + 1.1) * 2.0);
     }
 }

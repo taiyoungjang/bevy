@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy_app::{App, CoreStage, Plugin, StartupStage};
 use bevy_ecs::{prelude::*, reflect::ReflectComponent};
-use bevy_math::Mat4;
+use bevy_math::DMat4;
 use bevy_reflect::{
     std_traits::ReflectDefault, FromReflect, GetTypeRegistration, Reflect, ReflectDeserialize,
     ReflectSerialize,
@@ -58,7 +58,7 @@ impl<T: CameraProjection + Component + GetTypeRegistration> Plugin for CameraPro
 ///
 /// [`Camera`]: crate::camera::Camera
 pub trait CameraProjection {
-    fn get_projection_matrix(&self) -> Mat4;
+    fn get_projection_matrix(&self) -> DMat4;
     fn update(&mut self, width: f32, height: f32);
     fn far(&self) -> f32;
 }
@@ -84,7 +84,7 @@ impl From<OrthographicProjection> for Projection {
 }
 
 impl CameraProjection for Projection {
-    fn get_projection_matrix(&self) -> Mat4 {
+    fn get_projection_matrix(&self) -> DMat4 {
         match self {
             Projection::Perspective(projection) => projection.get_projection_matrix(),
             Projection::Orthographic(projection) => projection.get_projection_matrix(),
@@ -145,8 +145,8 @@ pub struct PerspectiveProjection {
 }
 
 impl CameraProjection for PerspectiveProjection {
-    fn get_projection_matrix(&self) -> Mat4 {
-        Mat4::perspective_infinite_reverse_rh(self.fov, self.aspect_ratio, self.near)
+    fn get_projection_matrix(&self) -> DMat4 {
+        DMat4::perspective_infinite_reverse_rh(self.fov as f64, self.aspect_ratio as f64, self.near as f64)
     }
 
     fn update(&mut self, width: f32, height: f32) {
@@ -214,16 +214,16 @@ pub struct OrthographicProjection {
 }
 
 impl CameraProjection for OrthographicProjection {
-    fn get_projection_matrix(&self) -> Mat4 {
-        Mat4::orthographic_rh(
-            self.left * self.scale,
-            self.right * self.scale,
-            self.bottom * self.scale,
-            self.top * self.scale,
+    fn get_projection_matrix(&self) -> DMat4 {
+        DMat4::orthographic_rh(
+            self.left as f64 * self.scale as f64,
+            self.right as f64 * self.scale as f64,
+            self.bottom as f64 * self.scale as f64,
+            self.top as f64 * self.scale as f64,
             // NOTE: near and far are swapped to invert the depth range from [0,1] to [1,0]
             // This is for interoperability with pipelines using infinite reverse perspective projections.
-            self.far,
-            self.near,
+            self.far as f64,
+            self.near as f64,
         )
     }
 

@@ -114,14 +114,14 @@ fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-const SPEED: f32 = 100.0;
+const SPEED: f64 = 100.0;
 fn movement(
     time: Res<Time>,
     input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, With<Sprite>>,
 ) {
     for mut transform in &mut query {
-        let mut direction = Vec3::ZERO;
+        let mut direction = DVec3::ZERO;
         if input.pressed(KeyCode::Left) {
             direction.x -= 1.0;
         }
@@ -135,8 +135,8 @@ fn movement(
             direction.y -= 1.0;
         }
 
-        if direction != Vec3::ZERO {
-            transform.translation += direction.normalize() * SPEED * time.delta_seconds();
+        if direction != DVec3::ZERO {
+            transform.translation += direction.normalize() * SPEED * time.delta_seconds_f64();
         }
     }
 }

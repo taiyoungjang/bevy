@@ -58,7 +58,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
 
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 15.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }
@@ -127,7 +127,7 @@ fn queue_custom(
                     entity,
                     pipeline,
                     draw_function: draw_custom,
-                    distance: rangefinder.distance(&mesh_uniform.transform),
+                    distance: rangefinder.distance_mat4(&mesh_uniform.transform) as f32,
                 });
             }
         }

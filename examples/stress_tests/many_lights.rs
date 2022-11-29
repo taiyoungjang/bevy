@@ -43,7 +43,7 @@ fn setup(
 
     const LIGHT_RADIUS: f32 = 0.3;
     const LIGHT_INTENSITY: f32 = 5.0;
-    const RADIUS: f32 = 50.0;
+    const RADIUS: f64 = 50.0;
     const N_LIGHTS: usize = 100_000;
 
     commands.spawn(PbrBundle {
@@ -55,7 +55,7 @@ fn setup(
             .unwrap(),
         ),
         material: materials.add(StandardMaterial::from(Color::WHITE)),
-        transform: Transform::from_scale(Vec3::NEG_ONE),
+        transform: Transform::from_scale(DVec3::NEG_ONE),
         ..default()
     });
 
@@ -80,7 +80,7 @@ fn setup(
                 color: Color::hsl(rng.gen_range(0.0..360.0), 1.0, 0.5),
                 ..default()
             },
-            transform: Transform::from_translation((RADIUS as f64 * unit_sphere_p).as_vec3()),
+            transform: Transform::from_translation(RADIUS as f64 * unit_sphere_p ),
             ..default()
         });
     }
@@ -105,8 +105,8 @@ fn setup(
         mesh,
         material,
         transform: Transform {
-            translation: Vec3::new(0.0, RADIUS, 0.0),
-            scale: Vec3::splat(5.0),
+            translation: DVec3::new(0.0, RADIUS, 0.0),
+            scale: DVec3::splat(5.0),
             ..default()
         },
         ..default()
@@ -134,7 +134,7 @@ fn spherical_polar_to_cartesian(p: DVec2) -> DVec3 {
 // System for rotating the camera
 fn move_camera(time: Res<Time>, mut camera_query: Query<&mut Transform, With<Camera>>) {
     let mut camera_transform = camera_query.single_mut();
-    let delta = time.delta_seconds() * 0.15;
+    let delta = time.delta_seconds_f64() * 0.15;
     camera_transform.rotate_z(delta);
     camera_transform.rotate_x(delta);
 }

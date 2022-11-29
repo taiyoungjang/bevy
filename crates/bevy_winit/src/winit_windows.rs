@@ -65,7 +65,7 @@ impl WinitWindows {
             )),
             _ => {
                 if let Some(sf) = scale_factor_override {
-                    winit_window_builder.with_inner_size(logical_size.to_physical::<f64>(sf))
+                    winit_window_builder.with_inner_size(logical_size.to_physical::<f32>(sf))
                 } else {
                     winit_window_builder.with_inner_size(logical_size)
                 }
@@ -152,7 +152,7 @@ impl WinitWindows {
 
                         if let Some(sf) = scale_factor_override {
                             winit_window.set_outer_position(
-                                LogicalPosition::new(position.x, position.y).to_physical::<f64>(sf),
+                                LogicalPosition::new(position.x, position.y).to_physical::<f32>(sf),
                             );
                         } else {
                             winit_window

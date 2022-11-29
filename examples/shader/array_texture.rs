@@ -49,7 +49,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::new(1.5, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(DVec3::new(1.5, 0.0, 0.0), DVec3::Y),
         ..Default::default()
     });
 }
@@ -83,7 +83,7 @@ fn create_array_texture(
         commands.spawn(MaterialMeshBundle {
             mesh: mesh_handle.clone(),
             material: material_handle.clone(),
-            transform: Transform::from_xyz(x as f32 + 0.5, 0.0, 0.0),
+            transform: Transform::from_xyz(x as f64 + 0.5, 0.0, 0.0),
             ..Default::default()
         });
     }

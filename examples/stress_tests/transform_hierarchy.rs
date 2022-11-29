@@ -240,18 +240,18 @@ struct UpdateFilter {
 
 /// update component with some per-component value
 #[derive(Component)]
-struct Update(f32);
+struct Update(f64);
 
 /// update positions system
 fn update(time: Res<Time>, mut query: Query<(&mut Transform, &mut Update)>) {
     for (mut t, mut u) in &mut query {
-        u.0 += time.delta_seconds() * 0.1;
+        u.0 += time.delta_seconds_f64() * 0.1;
         set_translation(&mut t.translation, u.0);
     }
 }
 
 /// set translation based on the angle `a`
-fn set_translation(translation: &mut Vec3, a: f32) {
+fn set_translation(translation: &mut DVec3, a: f64) {
     translation.x = a.cos() * 32.0;
     translation.y = a.sin() * 32.0;
 }
@@ -289,8 +289,8 @@ fn setup(mut commands: Commands, cfg: Res<Cfg>) {
                     &mut commands,
                     &cfg.update_filter,
                     Transform::from_xyz(
-                        rng.gen::<f32>() * 500.0 - 250.0,
-                        rng.gen::<f32>() * 500.0 - 250.0,
+                        rng.gen::<f64>() * 500.0 - 250.0,
+                        rng.gen::<f64>() * 500.0 - 250.0,
                         0.0,
                     ),
                 ));
@@ -306,8 +306,8 @@ fn setup(mut commands: Commands, cfg: Res<Cfg>) {
                         ..cfg.update_filter
                     },
                     Transform::from_xyz(
-                        rng.gen::<f32>() * 500.0 - 250.0,
-                        rng.gen::<f32>() * 500.0 - 250.0,
+                        rng.gen::<f64>() * 500.0 - 250.0,
+                        rng.gen::<f64>() * 500.0 - 250.0,
                         0.0,
                     ),
                 ));
@@ -379,7 +379,7 @@ fn spawn_tree(
         let current_idx = current_idx + 1;
 
         // separation factor to visually separate children (0..1)
-        let sep = child_idx[parent_idx] as f32 / node_info[parent_idx].child_count as f32;
+        let sep = child_idx[parent_idx] as f64 / node_info[parent_idx].child_count as f64;
         child_idx[parent_idx] += 1;
 
         // calculate and set depth
@@ -405,7 +405,7 @@ fn spawn_tree(
             }
 
             let transform = {
-                let mut translation = Vec3::ZERO;
+                let mut translation = DVec3::ZERO;
                 // use the same placement fn as the `update` system
                 // this way the entities won't be all at (0, 0, 0) when they don't have an `Update` component
                 set_translation(&mut translation, sep);

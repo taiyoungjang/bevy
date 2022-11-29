@@ -2,8 +2,8 @@
 
 use bevy::{math::Vec3Swizzles, prelude::*, time::FixedTimestep};
 
-const TIME_STEP: f32 = 1.0 / 60.0;
-const BOUNDS: Vec2 = Vec2::new(1200.0, 640.0);
+const TIME_STEP: f64 = 1.0 / 60.0;
+const BOUNDS: DVec2 = DVec2::new(1200.0, 640.0);
 
 fn main() {
     App::new()
@@ -11,7 +11,7 @@ fn main() {
         .add_startup_system(setup)
         .add_system_set(
             SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(TIME_STEP as f64))
+                .with_run_criteria(FixedTimestep::step(TIME_STEP))
                 .with_system(player_movement_system)
                 .with_system(snap_to_player_system)
                 .with_system(rotate_to_player_system),
@@ -24,9 +24,9 @@ fn main() {
 #[derive(Component)]
 struct Player {
     /// linear speed in meters per second
-    movement_speed: f32,
+    movement_speed: f64,
     /// rotation speed in radians per second
-    rotation_speed: f32,
+    rotation_speed: f64,
 }
 
 /// snap to player ship behavior
@@ -37,7 +37,7 @@ struct SnapToPlayer;
 #[derive(Component)]
 struct RotateToPlayer {
     /// rotation speed in radians per second
-    rotation_speed: f32,
+    rotation_speed: f64,
 }
 
 /// Add the game's entities to our world and creates an orthographic camera for 2D rendering.
@@ -68,7 +68,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Player {
             movement_speed: 500.0,                  // metres per second
-            rotation_speed: f32::to_radians(360.0), // degrees per second
+            rotation_speed: f64::to_radians(360.0), // degrees per second
         },
     ));
 
@@ -98,7 +98,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         RotateToPlayer {
-            rotation_speed: f32::to_radians(45.0), // degrees per second
+            rotation_speed: f64::to_radians(45.0), // degrees per second
         },
     ));
     commands.spawn((
@@ -108,7 +108,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         RotateToPlayer {
-            rotation_speed: f32::to_radians(90.0), // degrees per second
+            rotation_speed: f64::to_radians(90.0), // degrees per second
         },
     ));
 }
@@ -139,7 +139,7 @@ fn player_movement_system(
     transform.rotate_z(rotation_factor * ship.rotation_speed * TIME_STEP);
 
     // get the ship's forward vector by applying the current rotation to the ships initial facing vector
-    let movement_direction = transform.rotation * Vec3::Y;
+    let movement_direction = transform.rotation * DVec3::Y;
     // get the distance the ship will move based on direction, the ship's movement speed and delta time
     let movement_distance = movement_factor * ship.movement_speed * TIME_STEP;
     // create the change in translation using the new movement direction and distance
@@ -148,7 +148,7 @@ fn player_movement_system(
     transform.translation += translation_delta;
 
     // bound the ship within the invisible level bounds
-    let extents = Vec3::from((BOUNDS / 2.0, 0.0));
+    let extents = DVec3::from((BOUNDS / 2.0, 0.0));
     transform.translation = transform.translation.min(extents).max(-extents);
 }
 
@@ -167,7 +167,7 @@ fn snap_to_player_system(
 
         // get the quaternion to rotate from the initial enemy facing direction to the direction
         // facing the player
-        let rotate_to_player = Quat::from_rotation_arc(Vec3::Y, to_player.extend(0.));
+        let rotate_to_player = DQuat::from_rotation_arc(DVec3::Y, to_player.extend(0.));
 
         // rotate the enemy to face the player
         enemy_transform.rotation = rotate_to_player;
@@ -205,7 +205,7 @@ fn rotate_to_player_system(
 
     for (config, mut enemy_transform) in &mut query {
         // get the enemy ship forward vector in 2D (already unit length)
-        let enemy_forward = (enemy_transform.rotation * Vec3::Y).xy();
+        let enemy_forward = (enemy_transform.rotation * DVec3::Y).xy();
 
         // get the vector from the enemy ship to the player ship in 2D and normalize it.
         let to_player = (player_translation - enemy_transform.translation.xy()).normalize();
@@ -215,12 +215,12 @@ fn rotate_to_player_system(
 
         // if the dot product is approximately 1.0 then the enemy is already facing the player and
         // we can early out.
-        if (forward_dot_player - 1.0).abs() < f32::EPSILON {
+        if (forward_dot_player - 1.0).abs() < f64::EPSILON {
             continue;
         }
 
         // get the right vector of the enemy ship in 2D (already unit length)
-        let enemy_right = (enemy_transform.rotation * Vec3::X).xy();
+        let enemy_right = (enemy_transform.rotation * DVec3::X).xy();
 
         // get the dot product of the enemy right vector and the direction to the player ship.
         // if the dot product is negative them we need to rotate counter clockwise, if it is
@@ -233,7 +233,7 @@ fn rotate_to_player_system(
         // here as the 2D bevy co-ordinate system rotates around +Z, which is pointing out of the
         // screen. Due to the right hand rule, positive rotation around +Z is counter clockwise and
         // negative is clockwise.
-        let rotation_sign = -f32::copysign(1.0, right_dot_player);
+        let rotation_sign = -f64::copysign(1.0, right_dot_player);
 
         // limit rotation so we don't overshoot the target. We need to convert our dot product to
         // an angle here so we can get an angle of rotation to clamp against.

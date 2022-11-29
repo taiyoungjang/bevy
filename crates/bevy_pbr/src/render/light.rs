@@ -10,7 +10,7 @@ use bevy_ecs::{
     prelude::*,
     system::{lifetimeless::*, SystemParamItem},
 };
-use bevy_math::{Mat4, UVec3, UVec4, Vec2, Vec3, Vec3A, Vec3Swizzles, Vec4, Vec4Swizzles};
+use bevy_math::{Mat4, UVec3, UVec4, Vec3, Vec3Swizzles, Vec4Swizzles, Vec4, DVec3, DVec2, DMat4, DVec4,Vec3A};
 use bevy_render::{
     camera::{Camera, CameraProjection},
     color::Color,
@@ -67,7 +67,7 @@ pub struct ExtractedDirectionalLight {
     color: Color,
     illuminance: f32,
     transform: GlobalTransform,
-    projection: Mat4,
+    projection: DMat4,
     shadows_enabled: bool,
     shadow_depth_bias: f32,
     shadow_normal_bias: f32,
@@ -484,7 +484,7 @@ pub fn extract_lights(
                         // NOTE: Map from luminous power in lumens to luminous intensity in lumens per steradian
                         // for a point light. See https://google.github.io/filament/Filament.html#mjx-eqn-pointLightLuminousPower
                         // for details.
-                        intensity: point_light.intensity / (4.0 * std::f32::consts::PI),
+                        intensity: point_light.intensity as f32 / (4.0 * std::f32::consts::PI),
                         range: point_light.range,
                         radius: point_light.radius,
                         transform: *transform,
@@ -559,9 +559,9 @@ pub fn extract_lights(
         // NOTE: When using various PCF kernel sizes, this will need to be adjusted, according to:
         // https://catlikecoding.com/unity/tutorials/custom-srp/directional-shadows/
         let directional_light_texel_size = transform.radius_vec3a(Vec3A::new(
-            directional_light.shadow_projection.right - directional_light.shadow_projection.left,
-            directional_light.shadow_projection.top - directional_light.shadow_projection.bottom,
-            0.,
+            directional_light.shadow_projection.right as f32 - directional_light.shadow_projection.left as f32,
+            directional_light.shadow_projection.top as f32 - directional_light.shadow_projection.bottom as f32,
+            0.
         )) / directional_light_shadow_map.size as f32;
         // TODO: As above
         let render_visible_entities = visible_entities.clone();
@@ -581,44 +581,44 @@ pub fn extract_lights(
     }
 }
 
-pub(crate) const POINT_LIGHT_NEAR_Z: f32 = 0.1f32;
+pub(crate) const POINT_LIGHT_NEAR_Z: f64 = 0.1f64;
 
 pub(crate) struct CubeMapFace {
-    pub(crate) target: Vec3,
-    pub(crate) up: Vec3,
+    pub(crate) target: DVec3,
+    pub(crate) up: DVec3,
 }
 
 // see https://www.khronos.org/opengl/wiki/Cubemap_Texture
 pub(crate) const CUBE_MAP_FACES: [CubeMapFace; 6] = [
     // 0 	GL_TEXTURE_CUBE_MAP_POSITIVE_X
     CubeMapFace {
-        target: Vec3::NEG_X,
-        up: Vec3::NEG_Y,
+        target: DVec3::NEG_X,
+        up: DVec3::NEG_Y,
     },
     // 1 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X
     CubeMapFace {
-        target: Vec3::X,
-        up: Vec3::NEG_Y,
+        target: DVec3::X,
+        up: DVec3::NEG_Y,
     },
     // 2 	GL_TEXTURE_CUBE_MAP_POSITIVE_Y
     CubeMapFace {
-        target: Vec3::NEG_Y,
-        up: Vec3::Z,
+        target: DVec3::NEG_Y,
+        up: DVec3::Z,
     },
     // 3 	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
     CubeMapFace {
-        target: Vec3::Y,
-        up: Vec3::NEG_Z,
+        target: DVec3::Y,
+        up: DVec3::NEG_Z,
     },
     // 4 	GL_TEXTURE_CUBE_MAP_POSITIVE_Z
     CubeMapFace {
-        target: Vec3::NEG_Z,
-        up: Vec3::NEG_Y,
+        target: DVec3::NEG_Z,
+        up: DVec3::NEG_Y,
     },
     // 5 	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     CubeMapFace {
-        target: Vec3::Z,
-        up: Vec3::NEG_Y,
+        target: DVec3::Z,
+        up: DVec3::NEG_Y,
     },
 ];
 
@@ -707,16 +707,16 @@ pub enum LightEntity {
     },
 }
 pub fn calculate_cluster_factors(
-    near: f32,
-    far: f32,
-    z_slices: f32,
+    near: f64,
+    far: f64,
+    z_slices: f64,
     is_orthographic: bool,
-) -> Vec2 {
+) -> DVec2 {
     if is_orthographic {
-        Vec2::new(-near, z_slices / (-far - -near))
+        DVec2::new(-near, z_slices / (-far - -near))
     } else {
         let z_slices_of_ln_zfar_over_znear = (z_slices - 1.0) / (far / near).ln();
-        Vec2::new(
+        DVec2::new(
             z_slices_of_ln_zfar_over_znear,
             near.ln() * z_slices_of_ln_zfar_over_znear,
         )
@@ -727,22 +727,22 @@ pub fn calculate_cluster_factors(
 // we will also construct it in the fragment shader and need our implementations to match,
 // so we reproduce it here to avoid a mismatch if glam changes. we also switch the handedness
 // could move this onto transform but it's pretty niche
-pub(crate) fn spot_light_view_matrix(transform: &GlobalTransform) -> Mat4 {
+pub(crate) fn spot_light_view_matrix(transform: &GlobalTransform) -> DMat4 {
     // the matrix z_local (opposite of transform.forward())
     let fwd_dir = transform.back().extend(0.0);
 
-    let sign = 1f32.copysign(fwd_dir.z);
+    let sign = 1f64.copysign(fwd_dir.z);
     let a = -1.0 / (fwd_dir.z + sign);
     let b = fwd_dir.x * fwd_dir.y * a;
-    let up_dir = Vec4::new(
+    let up_dir = DVec4::new(
         1.0 + sign * fwd_dir.x * fwd_dir.x * a,
         sign * b,
         -sign * fwd_dir.x,
         0.0,
     );
-    let right_dir = Vec4::new(-b, -sign - fwd_dir.y * fwd_dir.y * a, fwd_dir.y, 0.0);
+    let right_dir = DVec4::new(-b, -sign - fwd_dir.y * fwd_dir.y * a, fwd_dir.y, 0.0);
 
-    Mat4::from_cols(
+    DMat4::from_cols(
         right_dir,
         up_dir,
         fwd_dir,
@@ -750,9 +750,9 @@ pub(crate) fn spot_light_view_matrix(transform: &GlobalTransform) -> Mat4 {
     )
 }
 
-pub(crate) fn spot_light_projection_matrix(angle: f32) -> Mat4 {
+pub(crate) fn spot_light_projection_matrix(angle: f64) -> DMat4 {
     // spot light projection FOV is 2x the angle from spot light centre to outer edge
-    Mat4::perspective_infinite_reverse_rh(angle * 2.0, 1.0, POINT_LIGHT_NEAR_Z)
+    DMat4::perspective_infinite_reverse_rh(angle * 2.0, 1.0, POINT_LIGHT_NEAR_Z)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -778,7 +778,7 @@ pub fn prepare_lights(
 
     // Pre-calculate for PointLights
     let cube_face_projection =
-        Mat4::perspective_infinite_reverse_rh(std::f32::consts::FRAC_PI_2, 1.0, POINT_LIGHT_NEAR_Z);
+        DMat4::perspective_infinite_reverse_rh(std::f64::consts::FRAC_PI_2, 1.0, POINT_LIGHT_NEAR_Z);
     let cube_face_rotations = CUBE_MAP_FACES
         .iter()
         .map(|CubeMapFace { target, up }| Transform::IDENTITY.looking_at(*target, *up))
@@ -895,14 +895,14 @@ pub fn prepare_lights(
 
                 (
                     // For spot lights: the direction (x,z), spot_scale and spot_offset
-                    light_direction.xz().extend(spot_scale).extend(spot_offset),
+                    light_direction.xz().extend(spot_scale.into()).extend(spot_offset.into()),
                     outer.tan(),
                 )
             }
             None => {
                 (
                     // For point lights: the lower-right 2x2 values of the projection matrix [2][2] [2][3] [3][2] [3][3]
-                    Vec4::new(
+                    DVec4::new(
                         cube_face_projection.z_axis.z,
                         cube_face_projection.z_axis.w,
                         cube_face_projection.w_axis.z,
@@ -915,24 +915,30 @@ pub fn prepare_lights(
         };
 
         gpu_point_lights.push(GpuPointLight {
-            light_custom_data,
+            light_custom_data: {Vec4::new(light_custom_data.x as f32,light_custom_data.y as f32,light_custom_data.z as f32,light_custom_data.w as f32)},
             // premultiply color by intensity
             // we don't use the alpha at all, so no reason to multiply only [0..3]
             color_inverse_square_range: (Vec4::from_slice(&light.color.as_linear_rgba_f32())
-                * light.intensity)
+                * light.intensity as f32)
                 .xyz()
-                .extend(1.0 / (light.range * light.range)),
-            position_radius: light.transform.translation().extend(light.radius),
+                .extend(1.0 / (light.range as f32 * light.range as f32)),
+            position_radius: { let v = light.transform.translation_vec3().extend(light.radius); Vec4::new(v.x as f32,v.y as f32,v.z as f32,v.w as f32) },
             flags: flags.bits,
-            shadow_depth_bias: light.shadow_depth_bias,
-            shadow_normal_bias: light.shadow_normal_bias,
-            spot_light_tan_angle,
+            shadow_depth_bias: light.shadow_depth_bias as f32,
+            shadow_normal_bias: light.shadow_normal_bias as f32,
+            spot_light_tan_angle: spot_light_tan_angle as f32,
         });
         global_light_meta.entity_to_index.insert(entity, index);
     }
 
     let mut gpu_directional_lights = [GpuDirectionalLight::default(); MAX_DIRECTIONAL_LIGHTS];
-
+    let dmat4_to_mat4 =|dmat4: DMat4| {
+        Mat4::from_cols(
+            Vec4::new(dmat4.x_axis.x as f32,dmat4.x_axis.y as f32,dmat4.x_axis.z as f32,dmat4.x_axis.w as f32),
+            Vec4::new(dmat4.y_axis.x as f32,dmat4.y_axis.y as f32,dmat4.y_axis.z as f32,dmat4.y_axis.w as f32),
+            Vec4::new(dmat4.z_axis.x as f32,dmat4.z_axis.y as f32,dmat4.z_axis.z as f32,dmat4.z_axis.w as f32),
+            Vec4::new(dmat4.w_axis.x as f32,dmat4.w_axis.y as f32,dmat4.w_axis.z as f32,dmat4.w_axis.w as f32)
+        )};
     for (index, (_light_entity, light)) in directional_lights
         .iter()
         .enumerate()
@@ -968,13 +974,13 @@ pub fn prepare_lights(
         gpu_directional_lights[index] = GpuDirectionalLight {
             // premultiply color by intensity
             // we don't use the alpha at all, so no reason to multiply only [0..3]
-            color: Vec4::from_slice(&light.color.as_linear_rgba_f32()) * intensity,
-            dir_to_light,
+            color: Vec4::from_slice(&light.color.as_linear_rgba_f32()) * intensity as f32,
+            dir_to_light: Vec3::new(dir_to_light.x as f32, dir_to_light.y as f32, dir_to_light.z as f32 ),
             // NOTE: * view is correct, it should not be view.inverse() here
-            view_projection: projection * view,
+            view_projection: dmat4_to_mat4(projection * view),
             flags: flags.bits,
-            shadow_depth_bias: light.shadow_depth_bias,
-            shadow_normal_bias: light.shadow_normal_bias,
+            shadow_depth_bias: light.shadow_depth_bias as f32,
+            shadow_normal_bias: light.shadow_normal_bias as f32,
         };
     }
 
@@ -1025,9 +1031,9 @@ pub fn prepare_lights(
 
         let is_orthographic = extracted_view.projection.w_axis.w == 1.0;
         let cluster_factors_zw = calculate_cluster_factors(
-            clusters.near,
-            clusters.far,
-            clusters.dimensions.z as f32,
+            clusters.near as f64,
+            clusters.far as f64,
+            clusters.dimensions.z as f64,
             is_orthographic,
         );
 
@@ -1039,8 +1045,8 @@ pub fn prepare_lights(
             cluster_factors: Vec4::new(
                 clusters.dimensions.x as f32 / extracted_view.viewport.z as f32,
                 clusters.dimensions.y as f32 / extracted_view.viewport.w as f32,
-                cluster_factors_zw.x,
-                cluster_factors_zw.y,
+                cluster_factors_zw.x as f32,
+                cluster_factors_zw.y as f32,
             ),
             cluster_dimensions: clusters.dimensions.extend(n_clusters),
             n_directional_lights: directional_lights.iter().len() as u32,
@@ -1126,7 +1132,7 @@ pub fn prepare_lights(
 
             let angle = light.spot_light_angles.expect("lights should be sorted so that \
                 [point_light_count..point_light_count + spot_light_shadow_maps_count] are spot lights").1;
-            let spot_projection = spot_light_projection_matrix(angle);
+            let spot_projection = spot_light_projection_matrix(angle as f64);
 
             let depth_texture_view =
                 directional_light_depth_texture
@@ -1166,7 +1172,6 @@ pub fn prepare_lights(
 
             view_lights.push(view_light_entity);
         }
-
         // directional lights
         for (light_index, &(light_entity, light)) in directional_lights
             .iter()
@@ -1690,7 +1695,7 @@ pub fn queue_shadows(
 }
 
 pub struct Shadow {
-    pub distance: f32,
+    pub distance: f64,
     pub entity: Entity,
     pub pipeline: CachedRenderPipelineId,
     pub draw_function: DrawFunctionId,
@@ -1701,7 +1706,7 @@ impl PhaseItem for Shadow {
 
     #[inline]
     fn sort_key(&self) -> Self::SortKey {
-        FloatOrd(self.distance)
+        FloatOrd(self.distance as f32)
     }
 
     #[inline]

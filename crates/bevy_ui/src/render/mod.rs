@@ -9,7 +9,7 @@ use crate::{prelude::UiCameraConfig, BackgroundColor, CalculatedClip, Node, UiIm
 use bevy_app::prelude::*;
 use bevy_asset::{load_internal_asset, AssetEvent, Assets, Handle, HandleUntyped};
 use bevy_ecs::prelude::*;
-use bevy_math::{Mat4, Rect, UVec4, Vec2, Vec3, Vec4Swizzles};
+use bevy_math::{Rect, UVec4, Vec4Swizzles, Vec2, Vec3, Mat4, DMat4};
 use bevy_reflect::TypeUuid;
 use bevy_render::texture::DEFAULT_IMAGE_HANDLE;
 use bevy_render::{
@@ -225,7 +225,7 @@ pub fn extract_uinodes(
 
             extracted_uinodes.uinodes.push(ExtractedUiNode {
                 stack_index,
-                transform: transform.compute_matrix(),
+                transform: transform.compute_matrix_mat4(),
                 background_color: color.0,
                 rect: Rect {
                     min: Vec2::ZERO,
@@ -247,11 +247,11 @@ pub fn extract_uinodes(
 /// as ui elements are "stacked on top of each other", they are within the camera's view
 /// and have room to grow.
 // TODO: Consider computing this value at runtime based on the maximum z-value.
-const UI_CAMERA_FAR: f32 = 1000.0;
+const UI_CAMERA_FAR: f64 = 1000.0;
 
 // This value is subtracted from the far distance for the camera's z-position to ensure nodes at z == 0.0 are rendered
 // TODO: Evaluate if we still need this.
-const UI_CAMERA_TRANSFORM_OFFSET: f32 = -0.1;
+const UI_CAMERA_TRANSFORM_OFFSET: f64 = -0.1;
 
 #[derive(Component)]
 pub struct DefaultCameraView(pub Entity);
@@ -272,7 +272,7 @@ pub fn extract_default_ui_camera_view<T: Component>(
         ) {
             // use a projection matrix with the origin in the top left instead of the bottom left that comes with OrthographicProjection
             let projection_matrix =
-                Mat4::orthographic_rh(0.0, logical_size.x, logical_size.y, 0.0, 0.0, UI_CAMERA_FAR);
+                DMat4::orthographic_rh(0.0, logical_size.x as f64, logical_size.y as f64, 0.0, 0.0, UI_CAMERA_FAR);
             let default_camera_view = commands
                 .spawn(ExtractedView {
                     projection: projection_matrix,
@@ -348,7 +348,7 @@ pub fn extract_text_uinodes(
                 let atlas_size = Some(atlas.size);
 
                 // NOTE: Should match `bevy_text::text2d::extract_text2d_sprite`
-                let extracted_transform = global_transform.compute_matrix()
+                let extracted_transform = global_transform.compute_matrix_mat4()
                     * Mat4::from_scale(Vec3::splat(scale_factor.recip()))
                     * Mat4::from_translation(
                         alignment_offset * scale_factor + text_glyph.position.extend(0.),

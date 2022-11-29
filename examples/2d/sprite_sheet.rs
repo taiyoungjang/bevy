@@ -45,7 +45,7 @@ fn setup(
     commands.spawn((
         SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
-            transform: Transform::from_scale(Vec3::splat(6.0)),
+            transform: Transform::from_scale(DVec3::splat(6.0)),
             ..default()
         },
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),

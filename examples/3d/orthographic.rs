@@ -23,7 +23,7 @@ fn setup(
             ..default()
         }
         .into(),
-        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 

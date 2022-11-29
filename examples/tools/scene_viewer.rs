@@ -8,13 +8,12 @@ use bevy::{
     asset::LoadState,
     gltf::Gltf,
     input::mouse::MouseMotion,
-    math::Vec3A,
     prelude::*,
     render::primitives::{Aabb, Sphere},
     scene::InstanceId,
 };
 
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemLabel)]
 struct CameraControllerCheckSystem;
@@ -224,16 +223,16 @@ fn setup_scene_after_load(
             return;
         }
 
-        let mut min = Vec3A::splat(f32::MAX);
-        let mut max = Vec3A::splat(f32::MIN);
+        let mut min = DVec3::splat(f64::MAX);
+        let mut max = DVec3::splat(f64::MIN);
         for (transform, maybe_aabb) in &meshes {
             let aabb = maybe_aabb.unwrap();
             // If the Aabb had not been rotated, applying the non-uniform scale would produce the
             // correct bounds. However, it could very well be rotated and so we first convert to
             // a Sphere, and then back to an Aabb to find the conservative min and max points.
             let sphere = Sphere {
-                center: Vec3A::from(transform.transform_point(Vec3::from(aabb.center))),
-                radius: transform.radius_vec3a(aabb.half_extents),
+                center: DVec3::from(transform.transform_point(DVec3::from(aabb.center))),
+                radius: transform.radius_vec3(aabb.half_extents),
             };
             let aabb = Aabb::from(sphere);
             min = min.min(aabb.min());
@@ -241,18 +240,18 @@ fn setup_scene_after_load(
         }
 
         let size = (max - min).length();
-        let aabb = Aabb::from_min_max(Vec3::from(min), Vec3::from(max));
+        let aabb = Aabb::from_min_max(DVec3::from(min), DVec3::from(max));
 
         info!("Spawning a controllable 3D perspective camera");
         let mut projection = PerspectiveProjection::default();
-        projection.far = projection.far.max(size * 10.0);
+        projection.far = projection.far.max(size as f32 * 10.0) as f32;
         commands.spawn((
             Camera3dBundle {
                 projection: projection.into(),
                 transform: Transform::from_translation(
-                    Vec3::from(aabb.center) + size * Vec3::new(0.5, 0.25, 0.5),
+                    DVec3::from(aabb.center) + size * DVec3::new(0.5, 0.25, 0.5),
                 )
-                .looking_at(Vec3::from(aabb.center), Vec3::Y),
+                .looking_at(DVec3::from(aabb.center), DVec3::Y),
                 camera: Camera {
                     is_active: false,
                     ..default()
@@ -276,12 +275,12 @@ fn setup_scene_after_load(
             commands.spawn(DirectionalLightBundle {
                 directional_light: DirectionalLight {
                     shadow_projection: OrthographicProjection {
-                        left: min.x,
-                        right: max.x,
-                        bottom: min.y,
-                        top: max.y,
-                        near: min.z,
-                        far: max.z,
+                        left: min.x as f32,
+                        right: max.x as f32,
+                        bottom: min.y as f32,
+                        top: max.y as f32,
+                        near: min.z as f32,
+                        far: max.z as f32,
                         ..default()
                     },
                     shadows_enabled: false,
@@ -334,10 +333,10 @@ fn update_lights(
     }
     if *animate_directional_light {
         for (mut transform, _) in &mut query {
-            transform.rotation = Quat::from_euler(
+            transform.rotation = DQuat::from_euler(
                 EulerRot::ZYX,
                 0.0,
-                time.elapsed_seconds() * PI / 15.0,
+                time.elapsed_seconds_f64() * PI / 15.0,
                 -FRAC_PI_4,
             );
         }
@@ -465,13 +464,13 @@ fn camera_controller(
     mut move_toggled: Local<bool>,
     mut query: Query<(&mut Transform, &mut CameraController), With<Camera>>,
 ) {
-    let dt = time.delta_seconds();
+    let dt = time.delta_seconds_f64();
 
     if let Ok((mut transform, mut options)) = query.get_single_mut() {
         if !options.initialized {
             let (yaw, pitch, _roll) = transform.rotation.to_euler(EulerRot::YXZ);
-            options.yaw = yaw;
-            options.pitch = pitch;
+            options.yaw = yaw as f32;
+            options.pitch = pitch as f32;
             options.initialized = true;
         }
         if !options.enabled {
@@ -519,9 +518,9 @@ fn camera_controller(
         }
         let forward = transform.forward();
         let right = transform.right();
-        transform.translation += options.velocity.x * dt * right
-            + options.velocity.y * dt * Vec3::Y
-            + options.velocity.z * dt * forward;
+        transform.translation += options.velocity.x as f64 * dt * right
+            + options.velocity.y as f64 * dt * DVec3::Y
+            + options.velocity.z as f64 * dt * forward;
 
         // Handle mouse input
         let mut mouse_delta = Vec2::ZERO;
@@ -533,10 +532,10 @@ fn camera_controller(
 
         if mouse_delta != Vec2::ZERO {
             // Apply look update
-            options.pitch = (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt)
-                .clamp(-PI / 2., PI / 2.);
-            options.yaw -= mouse_delta.x * options.sensitivity * dt;
-            transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, options.yaw, options.pitch);
+            options.pitch = (options.pitch as f32 - mouse_delta.y  * 0.5 * options.sensitivity * dt as f32)
+                .clamp(- std::f32::consts::PI / 2., std::f32::consts::PI / 2.);
+            options.yaw -= mouse_delta.x as f32 * options.sensitivity * dt as f32;
+            transform.rotation = DQuat::from_euler(EulerRot::ZYX, 0.0, options.yaw as f64, options.pitch as f64);
         }
     }
 }

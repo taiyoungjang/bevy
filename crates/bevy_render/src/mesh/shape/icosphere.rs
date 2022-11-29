@@ -7,7 +7,7 @@ use wgpu::PrimitiveTopology;
 #[derive(Debug, Clone, Copy)]
 pub struct Icosphere {
     /// The radius of the sphere.
-    pub radius: f32,
+    pub radius: f64,
     /// The number of subdivisions applied.
     pub subdivisions: usize,
 }
@@ -84,7 +84,7 @@ impl TryFrom<Icosphere> for Mesh {
 
         let points = raw_points
             .iter()
-            .map(|&p| (p * sphere.radius).into())
+            .map(|&p| (p * sphere.radius as f32).into())
             .collect::<Vec<[f32; 3]>>();
 
         let normals = raw_points

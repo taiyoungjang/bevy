@@ -143,7 +143,7 @@ mod test {
     use bevy_app::prelude::*;
     use bevy_ecs::prelude::*;
     use bevy_ecs::system::CommandQueue;
-    use bevy_math::vec3;
+    use bevy_math::DVec3;
     use bevy_tasks::{ComputeTaskPool, TaskPool};
 
     use crate::components::{GlobalTransform, Transform};
@@ -329,7 +329,7 @@ mod test {
         app.add_system(sync_simple_transforms);
         app.add_system(propagate_transforms);
 
-        let translation = vec3(1.0, 0.0, 0.0);
+        let translation = DVec3::new(1.0, 0.0, 0.0);
 
         // These will be overwritten.
         let mut child = Entity::from_raw(0);

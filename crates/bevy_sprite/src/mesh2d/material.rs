@@ -362,7 +362,7 @@ pub fn queue_material2d_meshes<M: Material2d>(
                             }
                         };
 
-                        let mesh_z = mesh2d_uniform.transform.w_axis.z;
+                        let mesh_z = mesh2d_uniform.transform.w_axis.z as f32;
                         transparent_phase.add(Transparent2d {
                             entity: *visible_entity,
                             draw_function: draw_transparent_pbr,

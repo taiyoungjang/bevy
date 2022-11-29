@@ -1,6 +1,6 @@
 //! Loads and renders a glTF file as a scene.
 
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 use bevy::prelude::*;
 
@@ -18,7 +18,7 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.7, 0.7, 1.0).looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.7, 0.7, 1.0).looking_at(DVec3::new(0.0, 0.3, 0.0), DVec3::Y),
         ..default()
     });
     const HALF_SIZE: f32 = 1.0;
@@ -49,10 +49,10 @@ fn animate_light_direction(
     mut query: Query<&mut Transform, With<DirectionalLight>>,
 ) {
     for mut transform in &mut query {
-        transform.rotation = Quat::from_euler(
+        transform.rotation = DQuat::from_euler(
             EulerRot::ZYX,
             0.0,
-            time.elapsed_seconds() * PI / 5.0,
+            time.elapsed_seconds_f64() * PI / 5.0,
             -FRAC_PI_4,
         );
     }

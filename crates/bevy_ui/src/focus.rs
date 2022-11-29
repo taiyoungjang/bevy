@@ -157,7 +157,7 @@ pub fn ui_focus_system(
                     }
                 }
 
-                let position = node.global_transform.translation();
+                let position = node.global_transform.translation_vec3();
                 let ui_position = position.truncate();
                 let extents = node.node.size() / 2.0;
                 let mut min = ui_position - extents;

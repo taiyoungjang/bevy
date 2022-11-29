@@ -1,4 +1,4 @@
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -66,19 +66,19 @@ fn setup(
 
     for x in 0..4 {
         for z in 0..4 {
-            let x = x as f32 - 2.0;
-            let z = z as f32 - 2.0;
+            let x = x as f64 - 2.0;
+            let z = z as f64 - 2.0;
             // red spot_light
             commands
                 .spawn(SpotLightBundle {
                     transform: Transform::from_xyz(1.0 + x, 2.0, z)
-                        .looking_at(Vec3::new(1.0 + x, 0.0, z), Vec3::X),
+                        .looking_at(DVec3::new(1.0 + x, 0.0, z), DVec3::X),
                     spot_light: SpotLight {
                         intensity: 200.0, // lumens
                         color: Color::WHITE,
                         shadows_enabled: true,
-                        inner_angle: PI / 4.0 * 0.85,
-                        outer_angle: PI / 4.0,
+                        inner_angle: PI as f32 / 4.0 * 0.85,
+                        outer_angle: PI as f32 / 4.0,
                         ..default()
                     },
                     ..default()
@@ -98,7 +98,7 @@ fn setup(
                     });
                     builder.spawn((
                         PbrBundle {
-                            transform: Transform::from_translation(Vec3::Z * -0.1),
+                            transform: Transform::from_translation(DVec3::Z * -0.1),
                             mesh: meshes.add(Mesh::from(shape::UVSphere {
                                 radius: 0.1,
                                 ..default()
@@ -118,22 +118,22 @@ fn setup(
 
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-4.0, 5.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-4.0, 5.0, 10.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }
 
 fn light_sway(time: Res<Time>, mut query: Query<(&mut Transform, &mut SpotLight)>) {
     for (mut transform, mut angles) in query.iter_mut() {
-        transform.rotation = Quat::from_euler(
+        transform.rotation = DQuat::from_euler(
             EulerRot::XYZ,
-            -FRAC_PI_2 + (time.elapsed_seconds() * 0.67 * 3.0).sin() * 0.5,
-            (time.elapsed_seconds() * 3.0).sin() * 0.5,
+            -FRAC_PI_2 + (time.elapsed_seconds_f64() * 0.67 * 3.0).sin() * 0.5,
+            (time.elapsed_seconds_f64() * 3.0).sin() * 0.5,
             0.0,
         );
-        let angle = ((time.elapsed_seconds() * 1.2).sin() + 1.0) * (FRAC_PI_4 - 0.1);
-        angles.inner_angle = angle * 0.8;
-        angles.outer_angle = angle;
+        let angle = ((time.elapsed_seconds_f64() * 1.2).sin() + 1.0) * (FRAC_PI_4 - 0.1);
+        angles.inner_angle = angle as f32 * 0.8;
+        angles.outer_angle = angle as f32;
     }
 }
 
@@ -143,7 +143,7 @@ fn movement(
     mut query: Query<&mut Transform, With<Movable>>,
 ) {
     for mut transform in &mut query {
-        let mut direction = Vec3::ZERO;
+        let mut direction = DVec3::ZERO;
         if input.pressed(KeyCode::Up) {
             direction.z -= 1.0;
         }
@@ -163,6 +163,6 @@ fn movement(
             direction.y -= 1.0;
         }
 
-        transform.translation += time.delta_seconds() * 2.0 * direction;
+        transform.translation += time.delta_seconds_f64() * 2.0 * direction;
     }
 }

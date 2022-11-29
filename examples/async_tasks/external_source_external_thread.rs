@@ -68,7 +68,7 @@ fn spawn_text(
             text: Text::from_section(event.0.to_string(), text_style.clone())
                 .with_alignment(TextAlignment::CENTER),
             transform: Transform::from_xyz(
-                per_frame as f32 * 100.0 + rand::thread_rng().gen_range(-40.0..40.0),
+                per_frame as f64 * 100.0 + rand::thread_rng().gen_range(-40.0..40.0),
                 300.0,
                 0.0,
             ),
@@ -83,7 +83,7 @@ fn move_text(
     time: Res<Time>,
 ) {
     for (entity, mut position) in &mut texts {
-        position.translation -= Vec3::new(0.0, 100.0 * time.delta_seconds(), 0.0);
+        position.translation -= DVec3::new(0.0, 100.0 * time.delta_seconds_f64(), 0.0);
         if position.translation.y < -300.0 {
             commands.entity(entity).despawn();
         }

@@ -33,8 +33,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn sprite_movement(time: Res<Time>, mut sprite_position: Query<(&mut Direction, &mut Transform)>) {
     for (mut logo, mut transform) in &mut sprite_position {
         match *logo {
-            Direction::Up => transform.translation.y += 150. * time.delta_seconds(),
-            Direction::Down => transform.translation.y -= 150. * time.delta_seconds(),
+            Direction::Up => transform.translation.y += 150. * time.delta_seconds_f64(),
+            Direction::Down => transform.translation.y -= 150. * time.delta_seconds_f64(),
         }
 
         if transform.translation.y > 200. {

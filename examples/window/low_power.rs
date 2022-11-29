@@ -113,8 +113,8 @@ pub(crate) mod test_setup {
         mut cube_transform: Query<&mut Transform, With<Rotator>>,
     ) {
         for mut transform in &mut cube_transform {
-            transform.rotate_x(time.delta_seconds());
-            transform.rotate_local_y(time.delta_seconds());
+            transform.rotate_x(time.delta_seconds_f64());
+            transform.rotate_local_y(time.delta_seconds_f64());
         }
     }
 
@@ -163,7 +163,7 @@ pub(crate) mod test_setup {
             ..default()
         });
         commands.spawn(Camera3dBundle {
-            transform: Transform::from_xyz(-2.0, 2.0, 2.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(-2.0, 2.0, 2.0).looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         });
         event.send(RequestRedraw);
