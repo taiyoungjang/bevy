@@ -1,6 +1,6 @@
 //! Demonstrates how to prevent meshes from casting/receiving shadows in a 3d scene.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     pbr::{NotShadowCaster, NotShadowReceiver},
@@ -28,7 +28,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let spawn_plane_depth = 500.0f32;
+    let spawn_plane_depth = 500.0f64;
     let spawn_height = 2.0;
     let sphere_radius = 0.25;
 
@@ -89,7 +89,7 @@ fn setup(
         transform: Transform::from_xyz(5.0, 5.0, 0.0),
         point_light: PointLight {
             intensity: 0.0,
-            range: spawn_plane_depth,
+            range: spawn_plane_depth as f32,
             color: Color::WHITE,
             shadows_enabled: true,
             ..default()
@@ -112,7 +112,7 @@ fn setup(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_rotation(Quat::from_euler(
+        transform: Transform::from_rotation(DQuat::from_euler(
             EulerRot::ZYX,
             0.0,
             PI / 2.,
@@ -124,7 +124,7 @@ fn setup(
     // camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(-5.0, 5.0, 5.0)
-            .looking_at(Vec3::new(-1.0, 1.0, 0.0), Vec3::Y),
+            .looking_at(DVec3::new(-1.0, 1.0, 0.0), DVec3::Y),
         ..default()
     });
 }

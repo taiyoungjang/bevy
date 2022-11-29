@@ -1,12 +1,13 @@
 //! Load a cubemap texture onto a cube like a skybox and cycle through different compressed texture formats
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     asset::LoadState,
     input::mouse::MouseMotion,
     pbr::{MaterialPipeline, MaterialPipelineKey},
     prelude::*,
+    math::*,
     reflect::TypeUuid,
     render::{
         mesh::MeshVertexBufferLayout,
@@ -69,7 +70,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         transform: Transform::from_xyz(0.0, 2.0, 0.0)
-            .with_rotation(Quat::from_rotation_x(-PI / 4.)),
+            .with_rotation(DQuat::from_rotation_x(-PI / 4.)),
         ..default()
     });
 
@@ -77,7 +78,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // camera
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 0.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.0, 0.0, 8.0).looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         },
         CameraController::default(),
@@ -192,7 +193,7 @@ fn animate_light_direction(
     mut query: Query<&mut Transform, With<DirectionalLight>>,
 ) {
     for mut transform in &mut query {
-        transform.rotate_y(time.delta_seconds() * 0.5);
+        transform.rotate_y(time.delta_seconds_f64() * 0.5);
     }
 }
 
@@ -347,8 +348,8 @@ pub fn camera_controller(
     if let Ok((mut transform, mut options)) = query.get_single_mut() {
         if !options.initialized {
             let (yaw, pitch, _roll) = transform.rotation.to_euler(EulerRot::YXZ);
-            options.yaw = yaw;
-            options.pitch = pitch;
+            options.yaw = yaw as f32;
+            options.pitch = pitch as f32;
             options.initialized = true;
         }
         if !options.enabled {
@@ -396,9 +397,10 @@ pub fn camera_controller(
         }
         let forward = transform.forward();
         let right = transform.right();
-        transform.translation += options.velocity.x * dt * right
+        let translation = options.velocity.x * dt * Vec3::new(right.x as f32, right.y as f32, right.z as f32)
             + options.velocity.y * dt * Vec3::Y
-            + options.velocity.z * dt * forward;
+            + options.velocity.z * dt * Vec3::new(forward.x as f32, forward.y as f32, forward.z as f32);
+        transform.translation += DVec3::new(translation.x as f64, translation.y as f64, translation.z as f64);
 
         // Handle mouse input
         let mut mouse_delta = Vec2::ZERO;
@@ -411,9 +413,9 @@ pub fn camera_controller(
         if mouse_delta != Vec2::ZERO {
             // Apply look update
             options.pitch = (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt)
-                .clamp(-PI / 2., PI / 2.);
+                .clamp(- std::f32::consts::PI / 2., std::f32::consts::PI / 2.);
             options.yaw -= mouse_delta.x * options.sensitivity * dt;
-            transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, options.yaw, options.pitch);
+            transform.rotation = DQuat::from_euler(EulerRot::ZYX, 0.0, options.yaw as f64, options.pitch as f64);
         }
     }
 }

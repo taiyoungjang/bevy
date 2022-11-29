@@ -56,12 +56,12 @@ struct Contributor {
 
 #[derive(Component)]
 struct Velocity {
-    translation: Vec3,
-    rotation: f32,
+    translation: DVec3,
+    rotation: f64,
 }
 
-const GRAVITY: f32 = 9.821 * 100.0;
-const SPRITE_SIZE: f32 = 75.0;
+const GRAVITY: f64 = 9.821 * 100.0;
+const SPRITE_SIZE: f64 = 75.0;
 
 const SATURATION_DESELECTED: f32 = 0.3;
 const LIGHTNESS_DESELECTED: f32 = 0.2;
@@ -95,7 +95,7 @@ fn setup_contributor_selection(mut commands: Commands, asset_server: Res<AssetSe
     for name in contribs {
         let pos = (rng.gen_range(-400.0..400.0), rng.gen_range(0.0..400.0));
         let dir = rng.gen_range(-1.0..1.0);
-        let velocity = Vec3::new(dir * 500.0, 0.0, 0.0);
+        let velocity = DVec3::new(dir * 500.0, 0.0, 0.0);
         let hue = rng.gen_range(0.0..=360.0);
 
         // some sprites should be flipped
@@ -112,7 +112,7 @@ fn setup_contributor_selection(mut commands: Commands, asset_server: Res<AssetSe
                 },
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(1.0, 1.0) * SPRITE_SIZE),
+                        custom_size: Some(Vec2::new(1.0, 1.0) * SPRITE_SIZE as f32 ),
                         color: Color::hsla(hue, SATURATION_DESELECTED, LIGHTNESS_DESELECTED, ALPHA),
                         flip_x: flipped,
                         ..default()
@@ -232,7 +232,7 @@ fn deselect(sprite: &mut Sprite, contributor: &Contributor, transform: &mut Tran
 
 /// Applies gravity to all entities with velocity
 fn velocity_system(time: Res<Time>, mut velocity_query: Query<&mut Velocity>) {
-    let delta = time.delta_seconds();
+    let delta = time.delta_seconds_f64();
 
     for mut velocity in &mut velocity_query {
         velocity.translation.y -= GRAVITY * delta;
@@ -252,14 +252,14 @@ fn collision_system(
         return;
     };
 
-    let ceiling = window.height() / 2.;
-    let ground = -(window.height() / 2.);
+    let ceiling = window.height() as f64 / 2.;
+    let ground = -(window.height() as f64  / 2.);
 
-    let wall_left = -(window.width() / 2.);
-    let wall_right = window.width() / 2.;
+    let wall_left = -(window.width() as f64 / 2.);
+    let wall_right = window.width() as f64 / 2.;
 
     // The maximum height the birbs should try to reach is one birb below the top of the window.
-    let max_bounce_height = (window.height() - SPRITE_SIZE * 2.0).max(0.0);
+    let max_bounce_height = (window.height() as f64 - SPRITE_SIZE * 2.0).max(0.0);
 
     let mut rng = rand::thread_rng();
 
@@ -299,7 +299,7 @@ fn collision_system(
 
 /// Apply velocity to positions and rotations.
 fn move_system(time: Res<Time>, mut query: Query<(&Velocity, &mut Transform)>) {
-    let delta = time.delta_seconds();
+    let delta = time.delta_seconds_f64();
 
     for (velocity, mut transform) in &mut query {
         transform.translation += delta * velocity.translation;

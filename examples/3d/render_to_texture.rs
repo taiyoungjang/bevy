@@ -1,6 +1,6 @@
 //! Shows how to render to a texture. Useful for mirrors, UI, or exporting images.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
@@ -80,7 +80,7 @@ fn setup(
         PbrBundle {
             mesh: cube_handle,
             material: cube_material_handle,
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
+            transform: Transform::from_translation(DVec3::new(0.0, 0.0, 1.0)),
             ..default()
         },
         FirstPassCube,
@@ -90,7 +90,7 @@ fn setup(
     // Light
     // NOTE: Currently lights are shared between passes - see https://github.com/bevyengine/bevy/issues/3462
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+        transform: Transform::from_translation(DVec3::new(0.0, 0.0, 10.0)),
         ..default()
     });
 
@@ -106,8 +106,8 @@ fn setup(
                 target: RenderTarget::Image(image_handle.clone()),
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 15.0))
-                .looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_translation(DVec3::new(0.0, 0.0, 15.0))
+                .looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         },
         first_pass_layer,
@@ -130,7 +130,7 @@ fn setup(
             mesh: cube_handle,
             material: material_handle,
             transform: Transform::from_xyz(0.0, 0.0, 1.5)
-                .with_rotation(Quat::from_rotation_x(-PI / 5.0)),
+                .with_rotation(DQuat::from_rotation_x(-PI / 5.0)),
             ..default()
         },
         MainPassCube,
@@ -138,7 +138,7 @@ fn setup(
 
     // The main pass camera.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 15.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }
@@ -146,15 +146,15 @@ fn setup(
 /// Rotates the inner cube (first pass)
 fn rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<FirstPassCube>>) {
     for mut transform in &mut query {
-        transform.rotate_x(1.5 * time.delta_seconds());
-        transform.rotate_z(1.3 * time.delta_seconds());
+        transform.rotate_x(1.5 * time.delta_seconds_f64());
+        transform.rotate_z(1.3 * time.delta_seconds_f64());
     }
 }
 
 /// Rotates the outer cube (main pass)
 fn cube_rotator_system(time: Res<Time>, mut query: Query<&mut Transform, With<MainPassCube>>) {
     for mut transform in &mut query {
-        transform.rotate_x(1.0 * time.delta_seconds());
-        transform.rotate_y(0.7 * time.delta_seconds());
+        transform.rotate_x(1.0 * time.delta_seconds_f64());
+        transform.rotate_y(0.7 * time.delta_seconds_f64());
     }
 }

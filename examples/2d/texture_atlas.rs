@@ -70,8 +70,8 @@ fn setup(
     // draw a sprite from the atlas
     commands.spawn(SpriteSheetBundle {
         transform: Transform {
-            translation: Vec3::new(150.0, 0.0, 0.0),
-            scale: Vec3::splat(4.0),
+            translation: DVec3::new(150.0, 0.0, 0.0),
+            scale: DVec3::splat(4.0),
             ..default()
         },
         sprite: TextureAtlasSprite::new(vendor_index),

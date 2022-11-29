@@ -1,6 +1,6 @@
 //! This examples compares MSAA (Multi-Sample Anti-Aliasing) and FXAA (Fast Approximate Anti-Aliasing).
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     core_pipeline::fxaa::{Fxaa, Sensitivity},
@@ -58,7 +58,7 @@ fn setup(
         commands.spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 0.25 })),
             material: cube_material.clone(),
-            transform: Transform::from_xyz(i as f32 * 0.25 - 1.0, 0.125, -i as f32 * 0.5),
+            transform: Transform::from_xyz(i as f64 * 0.25 - 1.0, 0.125, -i as f64 * 0.5),
             ..default()
         });
     }
@@ -85,7 +85,7 @@ fn setup(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_rotation(Quat::from_euler(
+        transform: Transform::from_rotation(DQuat::from_euler(
             EulerRot::ZYX,
             0.0,
             PI * -0.15,
@@ -102,7 +102,7 @@ fn setup(
                 ..default()
             },
             transform: Transform::from_xyz(0.7, 0.7, 1.0)
-                .looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
+                .looking_at(DVec3::new(0.0, 0.3, 0.0), DVec3::Y),
             ..default()
         })
         .insert(Fxaa::default());

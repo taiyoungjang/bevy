@@ -278,7 +278,7 @@ pub fn update_frusta<T: Component + CameraProjection + Send + Sync + 'static>(
             &view_projection,
             &transform.translation(),
             &transform.back(),
-            projection.far(),
+            projection.far() as f64,
         );
     }
 }
@@ -393,8 +393,8 @@ pub fn check_visibility(
                 if maybe_no_frustum_culling.is_none() {
                     let model = transform.compute_matrix();
                     let model_sphere = Sphere {
-                        center: model.transform_point3a(model_aabb.center),
-                        radius: transform.radius_vec3a(model_aabb.half_extents),
+                        center: model.transform_point3(model_aabb.center),
+                        radius: transform.radius_vec3(model_aabb.half_extents),
                     };
                     // Do quick sphere-based frustum culling
                     if !frustum.intersects_sphere(&model_sphere, false) {

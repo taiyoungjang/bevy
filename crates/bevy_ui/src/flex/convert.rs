@@ -64,14 +64,14 @@ pub fn val_to_f32(scale_factor: f64, val: Val) -> f32 {
     match val {
         Val::Undefined | Val::Auto => 0.0,
         Val::Px(value) => (scale_factor * value as f64) as f32,
-        Val::Percent(value) => value / 100.0,
+        Val::Percent(value) => value as f32 / 100.0,
     }
 }
 
 pub fn from_val(scale_factor: f64, val: Val) -> taffy::style::Dimension {
     match val {
         Val::Auto => taffy::style::Dimension::Auto,
-        Val::Percent(value) => taffy::style::Dimension::Percent(value / 100.0),
+        Val::Percent(value) => taffy::style::Dimension::Percent(value as f32 / 100.0 ),
         Val::Px(value) => taffy::style::Dimension::Points((scale_factor * value as f64) as f32),
         Val::Undefined => taffy::style::Dimension::Undefined,
     }

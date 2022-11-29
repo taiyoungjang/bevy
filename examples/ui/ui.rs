@@ -296,7 +296,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 #[derive(Component, Default)]
 struct ScrollingList {
-    position: f32,
+    position: f64,
 }
 
 fn mouse_scroll(
@@ -313,12 +313,12 @@ fn mouse_scroll(
             let panel_height = uinode.size().y;
             let max_scroll = (items_height - panel_height).max(0.);
             let dy = match mouse_wheel_event.unit {
-                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
-                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+                MouseScrollUnit::Line => mouse_wheel_event.y as f32 * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y as f32,
             };
-            scrolling_list.position += dy;
-            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
-            style.position.top = Val::Px(scrolling_list.position);
+            scrolling_list.position += dy as f64;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll as f64, 0.);
+            style.position.top = Val::Px(scrolling_list.position as f32);
         }
     }
 }

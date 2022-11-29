@@ -1,7 +1,7 @@
 //! Illustrates the difference between direction of a translation in respect to local object or
 //! global object Transform.
 
-use bevy::{math::Vec3A, prelude::*};
+use bevy::{math::DVec3, prelude::*};
 
 // Define a marker for entities that should be changed via their global transform.
 #[derive(Component)]
@@ -17,7 +17,7 @@ struct Move;
 
 // Define a resource for the current movement direction;
 #[derive(Resource, Default)]
-struct Direction(Vec3);
+struct Direction(DVec3);
 
 // Define component to decide when an entity should be ignored by the movement systems.
 #[derive(Component)]
@@ -70,7 +70,7 @@ fn setup(
                 PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
                     material: materials.add(Color::RED.into()),
-                    transform: Transform::from_translation(Vec3::Y - Vec3::Z),
+                    transform: Transform::from_translation(DVec3::Y - DVec3::Z),
                     ..default()
                 },
                 ChangeGlobal,
@@ -81,7 +81,7 @@ fn setup(
                 PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Cube { size: 0.5 })),
                     material: materials.add(Color::GREEN.into()),
-                    transform: Transform::from_translation(Vec3::Y + Vec3::Z),
+                    transform: Transform::from_translation(DVec3::Y + DVec3::Z),
                     ..default()
                 },
                 ChangeLocal,
@@ -92,13 +92,13 @@ fn setup(
 
     // Spawn a camera looking at the entities to show what's happening in this example.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
     // Add a light source for better 3d visibility.
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::splat(3.0)),
+        transform: Transform::from_translation(DVec3::splat(3.0)),
         ..default()
     });
 
@@ -124,7 +124,7 @@ fn move_cubes_according_to_global_transform(
     timer: Res<Time>,
 ) {
     for mut global_transform in &mut cubes {
-        *global_transform.translation_mut() += Vec3A::from(direction.0) * timer.delta_seconds();
+        *global_transform.translation_mut() += DVec3::from(direction.0) * timer.delta_seconds_f64();
     }
 }
 
@@ -135,19 +135,19 @@ fn move_cubes_according_to_local_transform(
     timer: Res<Time>,
 ) {
     for mut transform in &mut cubes {
-        transform.translation += direction.0 * timer.delta_seconds();
+        transform.translation += direction.0 * timer.delta_seconds_f64();
     }
 }
 
 // This system updates a resource that defines in which direction the cubes should move.
 // The direction is defined by the input of arrow keys and is only in left/right and up/down direction.
 fn update_directional_input(mut direction: ResMut<Direction>, keyboard_input: Res<Input<KeyCode>>) {
-    let horizontal_movement = Vec3::X
+    let horizontal_movement = DVec3::X
         * (keyboard_input.pressed(KeyCode::Right) as i32
-            - keyboard_input.pressed(KeyCode::Left) as i32) as f32;
-    let vertical_movement = Vec3::Y
+            - keyboard_input.pressed(KeyCode::Left) as i32) as f64;
+    let vertical_movement = DVec3::Y
         * (keyboard_input.pressed(KeyCode::Up) as i32
-            - keyboard_input.pressed(KeyCode::Down) as i32) as f32;
+            - keyboard_input.pressed(KeyCode::Down) as i32) as f64;
     direction.0 = horizontal_movement + vertical_movement;
 }
 

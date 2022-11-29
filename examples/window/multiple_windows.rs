@@ -31,7 +31,7 @@ fn setup(
     });
     // main camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 6.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 6.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
@@ -51,7 +51,7 @@ fn setup(
 
     // second window camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(6.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(6.0, 0.0, 0.0).looking_at(DVec3::ZERO, DVec3::Y),
         camera: Camera {
             target: RenderTarget::Window(window_id),
             ..default()

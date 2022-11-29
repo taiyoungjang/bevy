@@ -224,7 +224,7 @@ pub struct StandardMaterial {
     /// in the expected order.
     ///
     /// [z-fighting]: https://en.wikipedia.org/wiki/Z-fighting
-    pub depth_bias: f32,
+    pub depth_bias: f64,
 }
 
 impl Default for StandardMaterial {
@@ -438,7 +438,7 @@ impl Material for StandardMaterial {
     }
 
     #[inline]
-    fn depth_bias(&self) -> f32 {
+    fn depth_bias(&self) -> f64 {
         self.depth_bias
     }
 }

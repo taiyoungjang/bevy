@@ -1,6 +1,6 @@
 //! Illustrates how to scale an object in each direction.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -8,17 +8,17 @@ use bevy::prelude::*;
 // Define a component to keep information for the scaled object.
 #[derive(Component)]
 struct Scaling {
-    scale_direction: Vec3,
-    scale_speed: f32,
-    max_element_size: f32,
-    min_element_size: f32,
+    scale_direction: DVec3,
+    scale_speed: f64,
+    max_element_size: f64,
+    min_element_size: f64,
 }
 
 // Implement a simple initialization.
 impl Scaling {
     fn new() -> Self {
         Scaling {
-            scale_direction: Vec3::X,
+            scale_direction: DVec3::X,
             scale_speed: 2.0,
             max_element_size: 5.0,
             min_element_size: 1.0,
@@ -46,7 +46,7 @@ fn setup(
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::WHITE.into()),
-            transform: Transform::from_rotation(Quat::from_rotation_y(PI / 4.0)),
+            transform: Transform::from_rotation(DQuat::from_rotation_y(PI / 4.0)),
             ..default()
         },
         Scaling::new(),
@@ -54,13 +54,13 @@ fn setup(
 
     // Spawn a camera looking at the entities to show what's happening in this example.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
     // Add a light source for better 3d visibility.
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::ONE * 3.0),
+        transform: Transform::from_translation(DVec3::ONE * 3.0),
         ..default()
     });
 }
@@ -73,7 +73,7 @@ fn change_scale_direction(mut cubes: Query<(&mut Transform, &mut Scaling)>) {
         // the scaling vector is flipped so the scaling is gradually reverted.
         // Additionally, to ensure the condition does not trigger again we floor the elements to
         // their next full value, which should be max_element_size at max.
-        if transform.scale.max_element() > cube.max_element_size {
+        if transform.scale.max_element() > cube.max_element_size as f64 {
             cube.scale_direction *= -1.0;
             transform.scale = transform.scale.floor();
         }
@@ -83,7 +83,7 @@ fn change_scale_direction(mut cubes: Query<(&mut Transform, &mut Scaling)>) {
         // and the scale direction is flipped.
         // This way the entity will change the dimension in which it is scaled any time it
         // reaches its min_element_size.
-        if transform.scale.min_element() < cube.min_element_size {
+        if transform.scale.min_element() < cube.min_element_size as f64 {
             cube.scale_direction *= -1.0;
             transform.scale = transform.scale.ceil();
             cube.scale_direction = cube.scale_direction.zxy();
@@ -95,6 +95,6 @@ fn change_scale_direction(mut cubes: Query<(&mut Transform, &mut Scaling)>) {
 // by cycling through the directions to scale.
 fn scale_cube(mut cubes: Query<(&mut Transform, &Scaling)>, timer: Res<Time>) {
     for (mut transform, cube) in &mut cubes {
-        transform.scale += cube.scale_direction * cube.scale_speed * timer.delta_seconds();
+        transform.scale += cube.scale_direction * cube.scale_speed * timer.delta_seconds_f64();
     }
 }

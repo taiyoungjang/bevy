@@ -134,7 +134,7 @@ pub fn extract_mesh2d(
         if !computed_visibility.is_visible() {
             continue;
         }
-        let transform = transform.compute_matrix();
+        let transform = transform.compute_matrix_mat4();
         values.push((
             entity,
             (

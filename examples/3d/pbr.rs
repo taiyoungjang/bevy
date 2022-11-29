@@ -36,7 +36,7 @@ fn setup(
                     perceptual_roughness: x01,
                     ..default()
                 }),
-                transform: Transform::from_xyz(x as f32, y as f32 + 0.5, 0.0),
+                transform: Transform::from_xyz(x as f64, y as f64 + 0.5, 0.0),
                 ..default()
             });
         }
@@ -71,7 +71,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 0.0, 8.0).looking_at(Vec3::default(), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 8.0).looking_at(DVec3::default(), DVec3::Y),
         projection: OrthographicProjection {
             scale: 0.01,
             ..default()

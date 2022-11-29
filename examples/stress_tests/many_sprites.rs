@@ -15,7 +15,7 @@ use bevy::{
 
 use rand::Rng;
 
-const CAMERA_SPEED: f32 = 1000.0;
+const CAMERA_SPEED: f64 = 1000.0;
 
 const COLORS: [Color; 3] = [Color::BLUE, Color::WHITE, Color::RED];
 
@@ -66,13 +66,13 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, color_tint: Res<Color
         for x in -half_x..half_x {
             let position = Vec2::new(x as f32, y as f32);
             let translation = (position * tile_size).extend(rng.gen::<f32>());
-            let rotation = Quat::from_rotation_z(rng.gen::<f32>());
-            let scale = Vec3::splat(rng.gen::<f32>() * 2.0);
+            let rotation = DQuat::from_rotation_z(rng.gen::<f64>());
+            let scale = DVec3::splat(rng.gen::<f64>() * 2.0);
 
             sprites.push(SpriteBundle {
                 texture: sprite_handle.clone(),
                 transform: Transform {
-                    translation,
+                    translation: DVec3::new(translation.x as f64,translation.y as f64,translation.z as f64),
                     rotation,
                     scale,
                 },
@@ -95,9 +95,9 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, color_tint: Res<Color
 // System for rotating and translating the camera
 fn move_camera(time: Res<Time>, mut camera_query: Query<&mut Transform, With<Camera>>) {
     let mut camera_transform = camera_query.single_mut();
-    camera_transform.rotate_z(time.delta_seconds() * 0.5);
+    camera_transform.rotate_z(time.delta_seconds_f64() * 0.5);
     *camera_transform = *camera_transform
-        * Transform::from_translation(Vec3::X * CAMERA_SPEED * time.delta_seconds());
+        * Transform::from_translation(DVec3::X * CAMERA_SPEED * time.delta_seconds_f64());
 }
 
 #[derive(Deref, DerefMut)]

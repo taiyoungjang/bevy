@@ -17,7 +17,7 @@ use crate::{
 };
 use bevy_app::{App, Plugin};
 use bevy_ecs::prelude::*;
-use bevy_math::{Mat4, UVec4, Vec3, Vec4};
+use bevy_math::{Mat4, DMat4, UVec4, Vec3, Vec4};
 use bevy_reflect::Reflect;
 use bevy_transform::components::GlobalTransform;
 use bevy_utils::HashMap;
@@ -85,7 +85,7 @@ impl Default for Msaa {
 
 #[derive(Component)]
 pub struct ExtractedView {
-    pub projection: Mat4,
+    pub projection: DMat4,
     pub transform: GlobalTransform,
     pub hdr: bool,
     // uvec4(origin.x, origin.y, width, height)
@@ -96,6 +96,15 @@ impl ExtractedView {
     /// Creates a 3D rangefinder for a view
     pub fn rangefinder3d(&self) -> ViewRangefinder3d {
         ViewRangefinder3d::from_view_matrix(&self.transform.compute_matrix())
+    }
+    pub fn projection_mat4(&self) -> Mat4 {
+        let p = self.projection;
+        Mat4::from_cols(
+        Vec4::new(p.x_axis.x as f32,p.x_axis.y as f32,p.x_axis.z as f32,p.x_axis.w as f32),
+        Vec4::new(p.y_axis.x as f32,p.y_axis.y as f32,p.y_axis.z as f32,p.y_axis.w as f32),
+        Vec4::new(p.z_axis.x as f32,p.z_axis.y as f32,p.z_axis.z as f32,p.z_axis.w as f32),
+        Vec4::new(p.w_axis.x as f32,p.w_axis.y as f32,p.w_axis.z as f32,p.w_axis.w as f32)
+        )
     }
 }
 
@@ -241,9 +250,9 @@ fn prepare_view_uniforms(
 ) {
     view_uniforms.uniforms.clear();
     for (entity, camera) in &views {
-        let projection = camera.projection;
+        let projection = camera.projection_mat4();
         let inverse_projection = projection.inverse();
-        let view = camera.transform.compute_matrix();
+        let view = camera.transform.compute_matrix_mat4();
         let inverse_view = view.inverse();
         let view_uniforms = ViewUniformOffset {
             offset: view_uniforms.uniforms.push(ViewUniform {
@@ -253,7 +262,7 @@ fn prepare_view_uniforms(
                 inverse_view,
                 projection,
                 inverse_projection,
-                world_position: camera.transform.translation(),
+                world_position: camera.transform.translation_vec3(),
                 viewport: camera.viewport.as_vec4(),
             }),
         };

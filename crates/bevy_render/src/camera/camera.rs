@@ -16,7 +16,7 @@ use bevy_ecs::{
     reflect::ReflectComponent,
     system::{Commands, Query, Res},
 };
-use bevy_math::{Mat4, Ray, UVec2, UVec4, Vec2, Vec3};
+use bevy_math::{Ray, UVec2, UVec4, Vec2, DMat4, DVec3};
 use bevy_reflect::prelude::*;
 use bevy_reflect::FromReflect;
 use bevy_transform::components::GlobalTransform;
@@ -65,7 +65,7 @@ pub struct RenderTargetInfo {
 /// Holds internally computed [`Camera`] values.
 #[derive(Default, Debug, Clone)]
 pub struct ComputedCameraValues {
-    projection_matrix: Mat4,
+    projection_matrix: DMat4,
     target_info: Option<RenderTargetInfo>,
     // position and size of the `Viewport`
     old_viewport_size: Option<UVec2>,
@@ -195,7 +195,7 @@ impl Camera {
 
     /// The projection matrix computed using this camera's [`CameraProjection`].
     #[inline]
-    pub fn projection_matrix(&self) -> Mat4 {
+    pub fn projection_matrix(&self) -> DMat4 {
         self.computed.projection_matrix
     }
 
@@ -207,7 +207,7 @@ impl Camera {
     pub fn world_to_viewport(
         &self,
         camera_transform: &GlobalTransform,
-        world_position: Vec3,
+        world_position: DVec3,
     ) -> Option<Vec2> {
         let target_size = self.logical_viewport_size()?;
         let ndc_space_coords = self.world_to_ndc(camera_transform, world_position)?;
@@ -217,7 +217,7 @@ impl Camera {
         }
 
         // Once in NDC space, we can discard the z element and rescale x/y to fit the screen
-        Some((ndc_space_coords.truncate() + Vec2::ONE) / 2.0 * target_size)
+        Some((ndc_space_coords.truncate().as_vec2() + Vec2::ONE) / 2.0 * target_size)
     }
 
     /// Returns a ray originating from the camera, that passes through everything beyond `viewport_position`.
@@ -237,7 +237,7 @@ impl Camera {
         let ndc = viewport_position * 2. / target_size - Vec2::ONE;
 
         let ndc_to_world =
-            camera_transform.compute_matrix() * self.computed.projection_matrix.inverse();
+            camera_transform.compute_matrix_mat4() * self.computed.projection_matrix.as_mat4().inverse();
         let world_near_plane = ndc_to_world.project_point3(ndc.extend(1.));
         // Using EPSILON because an ndc with Z = 0 returns NaNs.
         let world_far_plane = ndc_to_world.project_point3(ndc.extend(f32::EPSILON));
@@ -257,12 +257,12 @@ impl Camera {
     pub fn world_to_ndc(
         &self,
         camera_transform: &GlobalTransform,
-        world_position: Vec3,
-    ) -> Option<Vec3> {
+        world_position: DVec3,
+    ) -> Option<DVec3> {
         // Build a transformation matrix to convert from world space to NDC using camera data
-        let world_to_ndc: Mat4 =
+        let world_to_ndc: DMat4 =
             self.computed.projection_matrix * camera_transform.compute_matrix().inverse();
-        let ndc_space_coords: Vec3 = world_to_ndc.project_point3(world_position);
+        let ndc_space_coords: DVec3 = world_to_ndc.project_point3(world_position);
 
         (!ndc_space_coords.is_nan()).then_some(ndc_space_coords)
     }
@@ -274,7 +274,7 @@ impl Camera {
     /// and between 0.0 and 1.0 on the Z axis.
     /// To get the world space coordinates with the viewport position, you should use
     /// [`world_to_viewport`](Self::world_to_viewport).
-    pub fn ndc_to_world(&self, camera_transform: &GlobalTransform, ndc: Vec3) -> Option<Vec3> {
+    pub fn ndc_to_world(&self, camera_transform: &GlobalTransform, ndc: DVec3) -> Option<DVec3> {
         // Build a transformation matrix to convert from NDC to world space using camera data
         let ndc_to_world =
             camera_transform.compute_matrix() * self.computed.projection_matrix.inverse();

@@ -7,7 +7,7 @@ use bevy_core_pipeline::prelude::Camera3d;
 use bevy_ecs::{entity::Entity, prelude::FromWorld, world::World};
 use bevy_hierarchy::{BuildWorldChildren, WorldChildBuilder};
 use bevy_log::warn;
-use bevy_math::{Mat4, Vec3};
+use bevy_math::{Mat4, DMat4, DVec3, Vec3};
 use bevy_pbr::{
     AlphaMode, DirectionalLight, DirectionalLightBundle, PbrBundle, PointLight, PointLightBundle,
     SpotLight, SpotLightBundle, StandardMaterial,
@@ -356,16 +356,16 @@ async fn load_gltf<'a, 'b>(
                     .and_then(|i| meshes.get(i).cloned()),
                 transform: match node.transform() {
                     gltf::scene::Transform::Matrix { matrix } => {
-                        Transform::from_matrix(bevy_math::Mat4::from_cols_array_2d(&matrix))
+                        Transform::from_matrix_mat4(bevy_math::Mat4::from_cols_array_2d(&matrix))
                     }
                     gltf::scene::Transform::Decomposed {
                         translation,
                         rotation,
                         scale,
                     } => Transform {
-                        translation: bevy_math::Vec3::from(translation),
-                        rotation: bevy_math::Quat::from_array(rotation),
-                        scale: bevy_math::Vec3::from(scale),
+                        translation: bevy_math::DVec3::from(translation.map(|x|x as f64)),
+                        rotation: bevy_math::DQuat::from_array(rotation.map(|x|x as f64)),
+                        scale: bevy_math::DVec3::from(scale.map(|x|x as f64)),
                     },
                 },
             },
@@ -703,7 +703,7 @@ fn load_node(
     let transform = gltf_node.transform();
     let mut gltf_error = None;
     let mut node = world_builder.spawn(SpatialBundle::from(Transform::from_matrix(
-        Mat4::from_cols_array_2d(&transform.matrix()),
+        DMat4::from_cols_array_2d(&transform.matrix().map(|x|x.map(|y|y as f64))),
     )));
 
     node.insert(node_name(gltf_node));
@@ -790,8 +790,8 @@ fn load_node(
                     ..Default::default()
                 });
                 mesh_entity.insert(Aabb::from_min_max(
-                    Vec3::from_slice(&bounds.min),
-                    Vec3::from_slice(&bounds.max),
+                    DVec3::from_slice(&bounds.min.map(|x|x as f64) ),
+                    DVec3::from_slice(&bounds.max.map(|x|x as f64)),
                 ));
 
                 if let Some(extras) = primitive.extras() {
@@ -839,8 +839,8 @@ fn load_node(
                             // candela (lm/sr) which is luminous intensity and we need luminous power.
                             // For a point light, luminous power = 4 * pi * luminous intensity
                             intensity: light.intensity() * std::f32::consts::PI * 4.0,
-                            range: light.range().unwrap_or(20.0),
-                            radius: light.range().unwrap_or(0.0),
+                            range: light.range().unwrap_or(20.0) as f32,
+                            radius: light.range().unwrap_or(0.0) as f32,
                             ..Default::default()
                         },
                         ..Default::default()

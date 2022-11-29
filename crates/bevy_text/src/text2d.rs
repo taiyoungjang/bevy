@@ -8,7 +8,7 @@ use bevy_ecs::{
     reflect::ReflectComponent,
     system::{Commands, Local, Query, Res, ResMut},
 };
-use bevy_math::{Vec2, Vec3};
+use bevy_math::{DVec3, Vec2, Vec3};
 use bevy_reflect::Reflect;
 use bevy_render::{
     prelude::Color,
@@ -120,12 +120,13 @@ pub fn extract_text2d_sprite(
             let index = text_glyph.atlas_info.glyph_index;
             let rect = Some(atlas.textures[index]);
 
+            let translation = alignment_offset * scale_factor + text_glyph.position.extend(0.);
             let glyph_transform = Transform::from_translation(
-                alignment_offset * scale_factor + text_glyph.position.extend(0.),
+                DVec3::new( translation.x as f64, translation.y as f64, translation.z as f64)
             );
             // NOTE: Should match `bevy_ui::render::extract_text_uinodes`
             let transform = *text_transform
-                * GlobalTransform::from_scale(Vec3::splat(scale_factor.recip()))
+                * GlobalTransform::from_scale(DVec3::splat(scale_factor.recip() as f64))
                 * glyph_transform;
 
             extracted_sprites.sprites.push(ExtractedSprite {

@@ -1,6 +1,6 @@
 //! Renders two cameras to the same window to accomplish "split screen".
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
@@ -38,7 +38,7 @@ fn setup(
 
     // Light
     commands.spawn(DirectionalLightBundle {
-        transform: Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
+        transform: Transform::from_rotation(DQuat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
         directional_light: DirectionalLight {
             shadows_enabled: true,
             ..default()
@@ -49,7 +49,7 @@ fn setup(
     // Left Camera
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 200.0, -100.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(0.0, 200.0, -100.0).looking_at(DVec3::ZERO, DVec3::Y),
             ..default()
         },
         LeftCamera,
@@ -58,7 +58,7 @@ fn setup(
     // Right Camera
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(100.0, 100., 150.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_xyz(100.0, 100., 150.0).looking_at(DVec3::ZERO, DVec3::Y),
             camera: Camera {
                 // Renders the right camera after the left camera, which has a default priority of 0
                 priority: 1,

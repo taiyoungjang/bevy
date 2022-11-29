@@ -40,13 +40,13 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(10.0, 10., -5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(10.0, 10., -5.0).looking_at(DVec3::ZERO, DVec3::Y),
         camera_3d: Camera3d {
             clear_color: ClearColorConfig::None,
             ..default()

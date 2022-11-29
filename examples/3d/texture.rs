@@ -1,6 +1,6 @@
 //! This example shows various ways to configure texture materials in 3D.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::prelude::*;
 
@@ -60,14 +60,14 @@ fn setup(
         mesh: quad_handle.clone(),
         material: material_handle,
         transform: Transform::from_xyz(0.0, 0.0, 1.5)
-            .with_rotation(Quat::from_rotation_x(-PI / 5.0)),
+            .with_rotation(DQuat::from_rotation_x(-PI / 5.0)),
         ..default()
     });
     // textured quad - modulated
     commands.spawn(PbrBundle {
         mesh: quad_handle.clone(),
         material: red_material_handle,
-        transform: Transform::from_rotation(Quat::from_rotation_x(-PI / 5.0)),
+        transform: Transform::from_rotation(DQuat::from_rotation_x(-PI / 5.0)),
         ..default()
     });
     // textured quad - modulated
@@ -75,12 +75,12 @@ fn setup(
         mesh: quad_handle,
         material: blue_material_handle,
         transform: Transform::from_xyz(0.0, 0.0, -1.5)
-            .with_rotation(Quat::from_rotation_x(-PI / 5.0)),
+            .with_rotation(DQuat::from_rotation_x(-PI / 5.0)),
         ..default()
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(3.0, 5.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(3.0, 5.0, 8.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 }

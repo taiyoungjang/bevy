@@ -1,6 +1,6 @@
 //! Demonstrates how shadow biases affect shadows in a 3d scene.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::{input::mouse::MouseMotion, prelude::*};
 
@@ -83,7 +83,7 @@ fn setup(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_rotation(Quat::from_euler(
+        transform: Transform::from_rotation(DQuat::from_euler(
             EulerRot::ZYX,
             0.0,
             PI / 2.,
@@ -96,7 +96,7 @@ fn setup(
     commands.spawn((
         Camera3dBundle {
             transform: Transform::from_xyz(-1.0, 1.0, 1.0)
-                .looking_at(Vec3::new(-1.0, 1.0, 0.0), Vec3::Y),
+                .looking_at(DVec3::new(-1.0, 1.0, 0.0), DVec3::Y),
             ..default()
         },
         CameraController::default(),
@@ -106,7 +106,7 @@ fn setup(
         commands.spawn(PbrBundle {
             mesh: sphere_handle.clone(),
             material: white_handle.clone(),
-            transform: Transform::from_xyz(0.0, spawn_height, z_i32 as f32),
+            transform: Transform::from_xyz(0.0, spawn_height, z_i32 as f64),
             ..default()
         });
     }
@@ -114,7 +114,7 @@ fn setup(
     // ground plane
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane {
-            size: 2.0 * spawn_plane_depth,
+            size: 2.0 * spawn_plane_depth as f32,
         })),
         material: white_handle,
         ..default()
@@ -309,18 +309,20 @@ fn camera_controller(
                 options.velocity = Vec3::ZERO;
             }
         }
-        let forward = transform.forward();
-        let right = transform.right();
-        transform.translation += options.velocity.x * dt * right
+        let as_vec = |v:DVec3|Vec3::new(v.x as f32, v.y as f32, v.z as f32);
+        let as_dvec = |v:Vec3|DVec3::new(v.x as f64, v.y as f64, v.z as f64);
+        let forward = as_vec(transform.forward());
+        let right = as_vec(transform.right());
+        transform.translation += as_dvec(options.velocity.x * dt * right
             + options.velocity.y * dt * Vec3::Y
-            + options.velocity.z * dt * forward;
+            + options.velocity.z * dt * forward);
 
         if mouse_delta != Vec2::ZERO {
             // Apply look update
             options.pitch = (options.pitch - mouse_delta.y * 0.5 * options.sensitivity * dt)
-                .clamp(-PI / 2., PI / 2.);
+                .clamp(-std::f32::consts::PI / 2., std::f32::consts::PI / 2.);
             options.yaw -= mouse_delta.x * options.sensitivity * dt;
-            transform.rotation = Quat::from_euler(EulerRot::ZYX, 0.0, options.yaw, options.pitch);
+            transform.rotation = DQuat::from_euler(EulerRot::ZYX, 0.0, options.yaw as f64, options.pitch as f64);
         }
     }
 }

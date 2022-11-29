@@ -379,15 +379,16 @@ impl Mesh {
             let mut minimum = VEC3_MAX;
             let mut maximum = VEC3_MIN;
             for p in values {
-                minimum = minimum.min(Vec3::from_slice(p));
-                maximum = maximum.max(Vec3::from_slice(p));
+                let p = DVec3::new(p[0] as f64, p[1] as f64, p[2] as f64);
+                minimum = minimum.min(p);
+                maximum = maximum.max(p);
             }
-            if minimum.x != std::f32::MAX
-                && minimum.y != std::f32::MAX
-                && minimum.z != std::f32::MAX
-                && maximum.x != std::f32::MIN
-                && maximum.y != std::f32::MIN
-                && maximum.z != std::f32::MIN
+            if minimum.x != f64::MAX
+                && minimum.y != f64::MAX
+                && minimum.z != f64::MAX
+                && maximum.x != f64::MIN
+                && maximum.y != f64::MIN
+                && maximum.z != f64::MIN
             {
                 return Some(Aabb::from_min_max(minimum, maximum));
             }
@@ -522,8 +523,8 @@ struct MeshAttributeData {
     values: VertexAttributeValues,
 }
 
-const VEC3_MIN: Vec3 = Vec3::splat(std::f32::MIN);
-const VEC3_MAX: Vec3 = Vec3::splat(std::f32::MAX);
+const VEC3_MIN: DVec3 = DVec3::splat(f64::MIN);
+const VEC3_MAX: DVec3 = DVec3::splat(f64::MAX);
 
 fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
     let (a, b, c) = (Vec3::from(a), Vec3::from(b), Vec3::from(c));

@@ -81,7 +81,7 @@ fn setup(
         PbrBundle {
             mesh: cube_handle,
             material: cube_material_handle,
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
+            transform: Transform::from_translation(DVec3::new(0.0, 0.0, 1.0)),
             ..default()
         },
         MainCube,
@@ -90,7 +90,7 @@ fn setup(
     // Light
     // NOTE: Currently lights are ignoring render layers - see https://github.com/bevyengine/bevy/issues/3462
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+        transform: Transform::from_translation(DVec3::new(0.0, 0.0, 10.0)),
         ..default()
     });
 
@@ -105,8 +105,8 @@ fn setup(
                 target: RenderTarget::Image(image_handle.clone()),
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 15.0))
-                .looking_at(Vec3::default(), Vec3::Y),
+            transform: Transform::from_translation(DVec3::new(0.0, 0.0, 15.0))
+                .looking_at(DVec3::default(), DVec3::Y),
             ..default()
         },
         // Disable UI rendering for the first pass camera. This prevents double rendering of UI at
@@ -133,7 +133,7 @@ fn setup(
             mesh: quad_handle.into(),
             material: material_handle,
             transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 1.5),
+                translation: DVec3::new(0.0, 0.0, 1.5),
                 ..default()
             },
             ..default()
@@ -161,8 +161,8 @@ fn main_camera_cube_rotator_system(
     mut query: Query<&mut Transform, With<MainCube>>,
 ) {
     for mut transform in &mut query {
-        transform.rotate_x(0.55 * time.delta_seconds());
-        transform.rotate_z(0.15 * time.delta_seconds());
+        transform.rotate_x(0.55 * time.delta_seconds_f64());
+        transform.rotate_z(0.15 * time.delta_seconds_f64());
     }
 }
 

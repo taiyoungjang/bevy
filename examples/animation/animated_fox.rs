@@ -1,6 +1,6 @@
 //! Plays animations from a skinned glTF.
 
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 use bevy::prelude::*;
 
@@ -36,7 +36,7 @@ fn setup(
     // Camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(100.0, 100.0, 150.0)
-            .looking_at(Vec3::new(0.0, 20.0, 0.0), Vec3::Y),
+            .looking_at(DVec3::new(0.0, 20.0, 0.0), DVec3::Y),
         ..default()
     });
 
@@ -49,7 +49,7 @@ fn setup(
 
     // Light
     commands.spawn(DirectionalLightBundle {
-        transform: Transform::from_rotation(Quat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
+        transform: Transform::from_rotation(DQuat::from_euler(EulerRot::ZYX, 0.0, 1.0, -PI / 4.)),
         directional_light: DirectionalLight {
             shadows_enabled: true,
             ..default()

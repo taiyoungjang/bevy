@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use rand::random;
 
 #[derive(Component, Deref)]
-struct Velocity(Vec2);
+struct Velocity(DVec2);
 
 fn spawn_system(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -13,10 +13,10 @@ fn spawn_system(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.spawn((
             SpriteBundle {
                 texture: texture.clone(),
-                transform: Transform::from_scale(Vec3::splat(0.1)),
+                transform: Transform::from_scale(DVec3::splat(0.1)),
                 ..default()
             },
-            Velocity(20.0 * Vec2::new(random::<f32>() - 0.5, random::<f32>() - 0.5)),
+            Velocity(20.0 * DVec2::new(random::<f64>() - 0.5, random::<f64>() - 0.5)),
         ));
     }
 }
@@ -39,8 +39,8 @@ fn move_system(mut sprites: Query<(&mut Transform, &Velocity)>) {
 // Bounce sprites outside the window
 fn bounce_system(windows: Res<Windows>, mut sprites: Query<(&Transform, &mut Velocity)>) {
     let window = windows.primary();
-    let width = window.width();
-    let height = window.height();
+    let width = window.width() as f64;
+    let height = window.height() as f64;
     let left = width / -2.0;
     let right = width / 2.0;
     let bottom = height / -2.0;

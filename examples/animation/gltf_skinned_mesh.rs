@@ -1,7 +1,7 @@
 //! Skinned mesh example with mesh and joints data loaded from a glTF file.
 //! Example taken from <https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_019_SimpleSkin.md>
 
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 use bevy::{pbr::AmbientLight, prelude::*, render::mesh::skinning::SkinnedMesh};
 
@@ -20,7 +20,7 @@ fn main() {
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Create a camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
@@ -67,6 +67,6 @@ fn joint_animation(
         let mut second_joint_transform = transform_query.get_mut(second_joint_entity).unwrap();
 
         second_joint_transform.rotation =
-            Quat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds().sin());
+            DQuat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds_f64().sin());
     }
 }

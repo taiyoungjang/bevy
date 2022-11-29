@@ -67,7 +67,7 @@ fn spawn_tasks(mut commands: Commands) {
                     }
 
                     // Such hard work, all done!
-                    Transform::from_xyz(x as f32, y as f32, z as f32)
+                    Transform::from_xyz(x as f64, y as f64, z as f64)
                 });
 
                 // Spawn new entity and add our new task as a component
@@ -107,9 +107,9 @@ fn handle_tasks(
 fn setup_env(mut commands: Commands) {
     // Used to center camera on spawned cubes
     let offset = if NUM_CUBES % 2 == 0 {
-        (NUM_CUBES / 2) as f32 - 0.5
+        (NUM_CUBES / 2) as f64 - 0.5
     } else {
-        (NUM_CUBES / 2) as f32
+        (NUM_CUBES / 2) as f64
     };
 
     // lights
@@ -121,7 +121,7 @@ fn setup_env(mut commands: Commands) {
     // camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(offset, offset, 15.0)
-            .looking_at(Vec3::new(offset, offset, 0.0), Vec3::Y),
+            .looking_at(DVec3::new(offset, offset, 0.0), DVec3::Y),
         ..default()
     });
 }

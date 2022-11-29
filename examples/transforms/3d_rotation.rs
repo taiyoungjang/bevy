@@ -2,12 +2,12 @@
 
 use bevy::prelude::*;
 
-use std::f32::consts::TAU;
+use std::f64::consts::TAU;
 
 // Define a component to designate a rotation speed to an entity.
 #[derive(Component)]
 struct Rotatable {
-    speed: f32,
+    speed: f64,
 }
 
 fn main() {
@@ -28,7 +28,7 @@ fn setup(
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
             material: materials.add(Color::WHITE.into()),
-            transform: Transform::from_translation(Vec3::ZERO),
+            transform: Transform::from_translation(DVec3::ZERO),
             ..default()
         },
         Rotatable { speed: 0.3 },
@@ -36,13 +36,13 @@ fn setup(
 
     // Spawn a camera looking at the entities to show what's happening in this example.
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, 20.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
     // Add a light source so we can see clearly.
     commands.spawn(PointLightBundle {
-        transform: Transform::from_translation(Vec3::ONE * 3.0),
+        transform: Transform::from_translation(DVec3::ONE * 3.0),
         ..default()
     });
 }
@@ -53,6 +53,6 @@ fn rotate_cube(mut cubes: Query<(&mut Transform, &Rotatable)>, timer: Res<Time>)
         // The speed is first multiplied by TAU which is a full rotation (360deg) in radians,
         // and then multiplied by delta_seconds which is the time that passed last frame.
         // In other words. Speed is equal to the amount of rotations per second.
-        transform.rotate_y(cube.speed * TAU * timer.delta_seconds());
+        transform.rotate_y(cube.speed * TAU * timer.delta_seconds_f64());
     }
 }

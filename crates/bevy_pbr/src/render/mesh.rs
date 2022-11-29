@@ -146,7 +146,7 @@ pub fn extract_meshes(
     let visible_meshes = meshes_query.iter().filter(|(_, vis, ..)| vis.is_visible());
 
     for (entity, _, transform, handle, not_receiver, not_caster) in visible_meshes {
-        let transform = transform.compute_matrix();
+        let transform = transform.compute_matrix_mat4();
         let mut flags = if not_receiver.is_some() {
             MeshFlags::empty()
         } else {

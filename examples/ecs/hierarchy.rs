@@ -1,6 +1,6 @@
 //! Creates a hierarchy of parents and children entities.
 
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 use bevy::prelude::*;
 
@@ -19,7 +19,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn a root entity with no parent
     let parent = commands
         .spawn(SpriteBundle {
-            transform: Transform::from_scale(Vec3::splat(0.75)),
+            transform: Transform::from_scale(DVec3::splat(0.75)),
             texture: texture.clone(),
             ..default()
         })
@@ -27,7 +27,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|parent| {
             // parent is a ChildBuilder, which has a similar API to Commands
             parent.spawn(SpriteBundle {
-                transform: Transform::from_xyz(250.0, 0.0, 0.0).with_scale(Vec3::splat(0.75)),
+                transform: Transform::from_xyz(250.0, 0.0, 0.0).with_scale(DVec3::splat(0.75)),
                 texture: texture.clone(),
                 sprite: Sprite {
                     color: Color::BLUE,
@@ -43,7 +43,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // entity has already been spawned.
     let child = commands
         .spawn(SpriteBundle {
-            transform: Transform::from_xyz(0.0, 250.0, 0.0).with_scale(Vec3::splat(0.75)),
+            transform: Transform::from_xyz(0.0, 250.0, 0.0).with_scale(DVec3::splat(0.75)),
             texture,
             sprite: Sprite {
                 color: Color::GREEN,
@@ -66,14 +66,14 @@ fn rotate(
 ) {
     for (parent, children) in &mut parents_query {
         if let Ok(mut transform) = transform_query.get_mut(parent) {
-            transform.rotate_z(-PI / 2. * time.delta_seconds());
+            transform.rotate_z(-PI / 2. * time.delta_seconds_f64());
         }
 
         // To iterate through the entities children, just treat the Children component as a Vec
         // Alternatively, you could query entities that have a Parent component
         for child in children {
             if let Ok(mut transform) = transform_query.get_mut(*child) {
-                transform.rotate_z(PI * time.delta_seconds());
+                transform.rotate_z(PI * time.delta_seconds_f64());
             }
         }
 

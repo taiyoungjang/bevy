@@ -1,7 +1,7 @@
 //! Skinned mesh example with mesh and joints data defined in code.
 //! Example taken from <https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_019_SimpleSkin.md>
 
-use std::f32::consts::*;
+use std::f64::consts::*;
 
 use bevy::{
     pbr::AmbientLight,
@@ -40,7 +40,7 @@ fn setup(
 ) {
     // Create a camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(DVec3::ZERO, DVec3::Y),
         ..default()
     });
 
@@ -120,7 +120,7 @@ fn setup(
         // Create joint entities
         let joint_0 = commands
             .spawn(TransformBundle::from(Transform::from_xyz(
-                i as f32 * 1.5,
+                i as f64 * 1.5,
                 0.0,
                 0.0,
             )))
@@ -160,6 +160,6 @@ fn setup(
 /// Animate the joint marked with [`AnimatedJoint`] component.
 fn joint_animation(time: Res<Time>, mut query: Query<&mut Transform, With<AnimatedJoint>>) {
     for mut transform in &mut query {
-        transform.rotation = Quat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds().sin());
+        transform.rotation = DQuat::from_rotation_z(FRAC_PI_2 * time.elapsed_seconds_f64().sin());
     }
 }

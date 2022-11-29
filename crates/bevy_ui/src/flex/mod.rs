@@ -283,14 +283,14 @@ pub fn flex_node_system(
 
     let physical_to_logical_factor = 1. / logical_to_physical_factor;
 
-    let to_logical = |v| (physical_to_logical_factor * v as f64) as f32;
+    let to_logical = |v| (physical_to_logical_factor * v as f64) as f64;
 
     // PERF: try doing this incrementally
     for (entity, mut node, mut transform, parent) in &mut node_transform_query {
         let layout = flex_surface.get_layout(entity).unwrap();
         let new_size = Vec2::new(
-            to_logical(layout.size.width),
-            to_logical(layout.size.height),
+            to_logical(layout.size.width) as f32,
+            to_logical(layout.size.height) as f32,
         );
         // only trigger change detection when the new value is different
         if node.calculated_size != new_size {
