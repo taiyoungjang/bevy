@@ -41,7 +41,6 @@ pub use once_cell;
 use crate::{
     camera::CameraPlugin,
     mesh::MeshPlugin,
-    prelude::ComputedVisibility,
     render_resource::{PipelineCache, Shader, ShaderLoader},
     renderer::{render_system, RenderInstance},
     view::{ViewPlugin, WindowRenderPlugin},
@@ -326,8 +325,7 @@ impl Plugin for RenderPlugin {
             .add_plugin(CameraPlugin)
             .add_plugin(ViewPlugin)
             .add_plugin(MeshPlugin)
-            .add_plugin(GlobalsPlugin)
-            .add_plugin(FrameCountPlugin);
+            .add_plugin(GlobalsPlugin);
 
         app.register_type::<color::Color>()
             .register_type::<primitives::Aabb>()
